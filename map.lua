@@ -4,8 +4,8 @@ require "tile"
 
 TILE_SIZE = 16
 DRAW_SIZE = 32
-TILES_X = 640 / DRAW_SIZE
-TILES_Y = 480 / DRAW_SIZE
+SCREEN_COLUMNS = 640 / DRAW_SIZE
+SCREEN_ROWS = 480 / DRAW_SIZE
 
 WATER = 0
 SAND = 1
@@ -51,8 +51,8 @@ end
 function Map:draw()
 	local startX = math.floor(camera.x / DRAW_SIZE)
 	local startY = math.floor(camera.y / DRAW_SIZE)
-	local endX = startX + TILES_X + 1
-	local endY = startY + TILES_Y + 1
+	local endX = startX + SCREEN_COLUMNS + 1
+	local endY = startY + SCREEN_ROWS + 1
 
 	for x=startX, endX do
 		for y=startY, endY do
@@ -132,6 +132,23 @@ function Map:generate(width, height)
 			end
 		end
 	end
+end
+
+function Map:islandFunction(x, y)
+	-- This function determines wether a certain point in a unit square (-1,-1) to (1,1)
+	-- is water or land to create the shape of an island.
+	if self.islandPerlin == nil then
+		local perlin = Perlin2D.create(64, 64, 0.5, 8)
+		self.islandPerlin = perlin:perlinNoise()
+	end
+
+	local value = self.islandPerlin[math.floor((x + 1) * 32 + 1)][math.floor((y + 1) * 32 + 1)]
+	local temp = value / (2 ^ 8)
+	temp = (temp - math.floor(temp)) * (2 ^ 8)
+
+	local lengthSq = x ^ 2 + y ^ 2
+
+	return temp > (0.3 + 0.3 * length)
 end
 
 function Map:collisionAt(x, y)
