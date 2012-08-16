@@ -3,7 +3,7 @@ require "perlinnoise"
 require "tile"
 
 TILE_SIZE = 16
-DRAW_SIZE = 32
+DRAW_SIZE = 8
 SCREEN_COLUMNS = 640 / DRAW_SIZE
 SCREEN_ROWS = 480 / DRAW_SIZE
 
@@ -12,9 +12,9 @@ SAND = 1
 GRASS = 2
 ROCK = 3
 
-WATER_LIMIT = 0.4
-SAND_LIMIT = 0.5
-GRASS_LIMIT = 0.8
+WATER_LIMIT = 0.3
+SAND_LIMIT = 0.4
+GRASS_LIMIT = 0.7
 ROCK_LIMIT = 1.
 
 Map = {}
@@ -79,8 +79,19 @@ end
 function Map:generate(width, height)
 	self.width, self.height = width, height
 
-	local perlin = Perlin2D.create(width, height, 0.8, 6)
+	local perlin = Perlin2D.create(width, height, 0.65, 6)
 	local data = perlin:perlinNoise()
+	
+	local mask = self:generateIslandMask(width, height)
+
+	for x=1, width do
+		for y=1, height do
+			data[x][y] = data[x][y] * mask[x][y]
+		end
+	end
+
+	arrayToImage(data, "maskedPerlin")
+
 	data = smoothenHeightMap(data, 10)
 
 	local types = {}
@@ -90,20 +101,19 @@ function Map:generate(width, height)
 		for y=1, self.height do
 			local type = WATER
 			local value = data[x][y]
-			if value < WATER_LIMIT then 
-				type = WATER
-			elseif value < SAND_LIMIT then 
-				type = SAND
-			elseif value < GRASS_LIMIT then 
-				type = GRASS
-			elseif value < ROCK_LIMIT then 
-				type = ROCK
+
+			if value < WATER_LIMIT then type = WATER
+			elseif value < SAND_LIMIT then type = SAND
+			elseif value < GRASS_LIMIT then type = GRASS
+			elseif value < ROCK_LIMIT then type = ROCK
 			end
 
 			types[x][y] = type
 		end
 	end
 
+	-- Calculate which transition tiles must be placed where using bitwise counting.
+	-- http://www.saltgames.com/2010/a-bitwise-method-for-applying-tilemaps/
 	self.tiles = {}
 	for x=1, self.width do
 		self.tiles[x] = {}
@@ -134,21 +144,61 @@ function Map:generate(width, height)
 	end
 end
 
-function Map:islandFunction(x, y)
-	-- This function determines wether a certain point in a unit square (-1,-1) to (1,1)
-	-- is water or land to create the shape of an island.
-	if self.islandPerlin == nil then
-		local perlin = Perlin2D.create(64, 64, 0.5, 8)
-		self.islandPerlin = perlin:perlinNoise()
+function Map:generateIslandMask(width, height)
+	-- Generates a mask with values ranging from 0 to 1 with which to multiply
+	-- the height map.
+	-- Credit goes to http://breinygames.blogspot.nl/2012/06/generating-terrain-using-perlin-noise.html
+	local mask = {}
+	for x=1, width do
+		mask[x] = {}
+		for y=1, height do
+			mask[x][y] = 0
+		end
 	end
 
-	local value = self.islandPerlin[math.floor((x + 1) * 32 + 1)][math.floor((y + 1) * 32 + 1)]
-	local temp = value / (2 ^ 8)
-	temp = (temp - math.floor(temp)) * (2 ^ 8)
+	for i=1, math.floor(width * height * 0.85) do
+		local x = math.random(30, width - 30)
+		local y = math.random(30, height - 30)
 
-	local lengthSq = x ^ 2 + y ^ 2
+		for j=1, math.floor(width * height * 0.05) do
+			mask[x][y] = mask[x][y] + 4
 
-	return temp > (0.3 + 0.3 * length)
+			if mask[x][y] > 255 then mask[x][y] = 255 end
+			local value = mask[x][y]
+
+			local directions = {}
+			if x - 1 >= 1 then
+				if mask[x - 1][y] <= value then table.insert(directions, "left") end
+			end
+			if x + 1 <= width then
+				if mask[x + 1][y] <= value then table.insert(directions, "right") end
+			end
+			if y - 1 >= 1 then
+				if mask[x][y - 1] <= value then table.insert(directions, "up") end
+			end
+			if y + 1 <= height then
+				if mask[x][y + 1] <= value then table.insert(directions, "down") end
+			end
+
+			if #directions == 0 then break end
+
+			local direction = directions[math.random(#directions)]
+			if direction == "left" then x = x - 1 end
+			if direction == "right" then x = x + 1 end
+			if direction == "up" then y = y - 1 end
+			if direction == "down" then y = y + 1 end
+		end
+	end
+	
+	for x=1, width do
+		for y=1, height do
+			mask[x][y] = mask[x][y] / 255
+		end
+	end
+
+	arrayToImage(mask, "islandMask")
+
+	return mask
 end
 
 function Map:collisionAt(x, y)
@@ -158,9 +208,7 @@ function Map:collisionAt(x, y)
 	if tileX >= 0 and tileX < self.width and tileY >= 0 and tileY < self.height then
 		local type = self.tiles[tileX + 1][tileY + 1].type
 		
-		if type == WATER then
-			return true
-		end
+		if type == WATER then return true end
 	end
 
 	return false

@@ -19,8 +19,6 @@ function Perlin2D.create(width, height, persistance, octaves)
 		end
 	end
 
-	arrayToImage(self.noise, "noise")
-
 	return self
 end
 
@@ -35,7 +33,6 @@ function Perlin2D:smoothNoise(octave)
 		local left = math.floor(x / period) * period
 		local right = (left + period) % self.width
 		local horBlend = (x - left) * frequency
-		--print("Left: " .. left .. " x: " .. x .. " Frequency: " .. frequency)
 
 		for y=0, self.height - 1 do
 			local top = math.floor(y / period) * period
@@ -46,7 +43,6 @@ function Perlin2D:smoothNoise(octave)
 			local below = math.cerp(self.noise[left + 1][bottom + 1], self.noise[right + 1][bottom + 1], horBlend)
 
 			smooth[x + 1][y + 1] = math.cerp(above, below, verBlend)
-			--smooth[x + 1][y + 1] = verBlend
 		end
 	end
 
@@ -58,8 +54,6 @@ function Perlin2D:perlinNoise()
 
 	for i=1, self.octaves do
 		smooth[i] = self:smoothNoise(i - 1)
-
-		arrayToImage(smooth[i], "octave" .. i)
 	end
 
 	local perlin = {}
@@ -89,9 +83,6 @@ function Perlin2D:perlinNoise()
 			perlin[x][y] = perlin[x][y] / totalAmplitude
 		end
 	end
-
-	arrayToImage(perlin, "perlin")
-	print(perlin[1][1])
 
 	return perlin
 end
