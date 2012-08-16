@@ -7,7 +7,12 @@ function Player.create(x, y)
 	local self = {}
 	setmetatable(self, Player)
 
-	self.pos = Vec2.create(x, y)
+	self.pos = Vec2.create(0, 0)
+	while not map:walkable(self.pos.x, self.pos.y) do
+		print(tostring(self.pos))
+		self.pos = Vec2.create(math.random(map.width) * DRAW_SIZE, math.random(map.height) * DRAW_SIZE)
+	end
+
 	self.circleOffset = Vec2.create(0, 18)
 	self.circleRadius = 6
 
@@ -77,28 +82,28 @@ function Player:handleCollision(dt)
 	local tRight, tBottom = math.floor(right / tSize), math.floor(bottom / tSize)
 	
 	local result, normal, length = false, 0, 0
-	if map:collisionAt(left, top) then
+	if not map:walkable(left, top) then
 		result, normal, length = collideRectCircle(Rect.create(tLeft * tSize, tTop * tSize, tSize, tSize), circlePos, self.circleRadius)
 		if result then
 			self.pos = self.pos + normal * length
 		end
 	end
 
-	if map:collisionAt(right, top) then
+	if not map:walkable(right, top) then
 		result, normal, length = collideRectCircle(Rect.create(tRight * tSize, tTop * tSize, tSize, tSize), circlePos, self.circleRadius)
 		if result then
 			self.pos = self.pos + normal * length
 		end
 	end
 
-	if map:collisionAt(right, bottom) then
+	if not map:walkable(right, bottom) then
 		result, normal, length = collideRectCircle(Rect.create(tRight * tSize, tBottom * tSize, tSize, tSize), circlePos, self.circleRadius)
 		if result then
 			self.pos = self.pos + normal * length
 		end
 	end
 
-	if map:collisionAt(left, bottom) then
+	if not map:walkable(left, bottom) then
 		result, normal, length = collideRectCircle(Rect.create(tLeft * tSize, tBottom * tSize, tSize, tSize), circlePos, self.circleRadius)
 		if result then
 			self.pos = self.pos + normal * length

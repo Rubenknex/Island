@@ -3,7 +3,7 @@ require "perlinnoise"
 require "tile"
 
 TILE_SIZE = 16
-DRAW_SIZE = 8
+DRAW_SIZE = 32
 SCREEN_COLUMNS = 640 / DRAW_SIZE
 SCREEN_ROWS = 480 / DRAW_SIZE
 
@@ -15,7 +15,7 @@ ROCK = 3
 WATER_LIMIT = 0.3
 SAND_LIMIT = 0.4
 GRASS_LIMIT = 0.7
-ROCK_LIMIT = 1.
+ROCK_LIMIT = 1.0
 
 Map = {}
 Map.__index = Map
@@ -201,15 +201,18 @@ function Map:generateIslandMask(width, height)
 	return mask
 end
 
-function Map:collisionAt(x, y)
+function Map:walkable(x, y)
 	tileX = math.floor(x / DRAW_SIZE)
 	tileY = math.floor(y / DRAW_SIZE)
 
 	if tileX >= 0 and tileX < self.width and tileY >= 0 and tileY < self.height then
 		local type = self.tiles[tileX + 1][tileY + 1].type
+		print(type)
 		
-		if type == WATER then return true end
+		if type == WATER then return false end
+	else
+		return false
 	end
 
-	return false
+	return true
 end
