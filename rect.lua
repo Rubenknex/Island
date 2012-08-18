@@ -20,3 +20,7 @@ function Rect:intersect(other)
 
 	return true
 end
+
+function Rect:contains(x, y)
+	return x >= self.x and x <= self.max_x and y >= self.y and y <= self.max_y
+end
