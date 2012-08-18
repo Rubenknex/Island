@@ -1,12 +1,14 @@
 require "vec2"
 
-function math.cerp(a, b, x)
+utils = {}
+
+function utils.cerp(a, b, x)
 	-- Returns the cosine interpolated value between a and b.
 	local f = (1 - math.cos(x * math.pi)) * 0.5
 	return a * (1 - f) + b * f
 end
 
-function math.clamp(value, min, max)
+function utils.clamp(value, min, max)
 	-- Returns the value clamped between min and max.
 	if value < min then
 		return min
@@ -17,12 +19,12 @@ function math.clamp(value, min, max)
 	return value
 end
 
-function math.lerp(a, b, x)
+function utils.lerp(a, b, x)
 	-- Returns the linear interpolated value between a and b.
 	return a + (b - a) * x
 end
 
-function HSL(h, s, l, a)
+function utils.HSL(h, s, l, a)
 	-- Converts from HSL color space to RGB color space
 	-- h: Hue, where in the spectrum the color is.
 	-- s: Saturation, how vibrant the color is.
@@ -45,9 +47,9 @@ function HSL(h, s, l, a)
 	return (r + m) * 255, (g + m) * 255, (b + m) * 255, a
 end
 
-function collideRectCircle(rect, pos, radius)
-	local closestX = math.clamp(pos.x, rect.x, rect.max_x)
-	local closestY = math.clamp(pos.y, rect.y, rect.max_y)
+function utils.collideRectCircle(rect, pos, radius)
+	local closestX = utils.clamp(pos.x, rect.x, rect.max_x)
+	local closestY = utils.clamp(pos.y, rect.y, rect.max_y)
 
 	local diff = Vec2.create(pos.x - closestX, pos.y - closestY)
 
@@ -66,7 +68,7 @@ function collideRectCircle(rect, pos, radius)
 	return true, normal, radius - length
 end
 
-function smoothenHeightMap(data, passes)
+function utils.smoothenHeightMap(data, passes)
 	local newData = nil
 	local width, height = #data, #data[1]
 
@@ -131,7 +133,7 @@ function smoothenHeightMap(data, passes)
 	return newData
 end
 
-function arrayToImage(array, name)
+function utils.arrayToImage(array, name)
 	local width, height = #array, #array[1]
 	local imgData = love.image.newImageData(width, height)
 	for y=1, height do
