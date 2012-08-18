@@ -1,6 +1,7 @@
-require "functions"
+require "utils"
 require "perlinnoise"
 require "tile"
+require "vec2"
 
 TILE_SIZE = 16
 DRAW_SIZE = 32
@@ -14,7 +15,7 @@ ROCK = 3
 
 WATER_LIMIT = 0.3
 SAND_LIMIT = 0.4
-GRASS_LIMIT = 0.7
+GRASS_LIMIT = 0.65
 ROCK_LIMIT = 1.0
 
 Map = {}
@@ -79,10 +80,10 @@ end
 function Map:generate(width, height)
 	self.width, self.height = width, height
 
-	local perlin = Perlin2D.create(width, height, 0.65, 6)
-	local data = perlin:perlinNoise()
+	local perlin = Perlin2D.create(width, height, 0.8, 6)
+	local data = perlin:generate()
 	
-	local mask = self:generateIslandMask(width, height)
+	local mask = self:generateIslandMask(width, height, 30)
 
 	for x=1, width do
 		for y=1, height do
@@ -90,15 +91,17 @@ function Map:generate(width, height)
 		end
 	end
 
-	arrayToImage(data, "maskedPerlin")
+	utils.arrayToImage(data, "maskedPerlin")
 
-	data = smoothenHeightMap(data, 10)
+	data = utils.smoothenHeightMap(data, 5)
+
+	utils.arrayToImage(data, "smoothedPerlin")
 
 	local types = {}
-	for x=1, self.width do
+	for x=1, width do
 		types[x] = {}
 
-		for y=1, self.height do
+		for y=1, height do
 			local type = WATER
 			local value = data[x][y]
 
@@ -111,6 +114,21 @@ function Map:generate(width, height)
 			types[x][y] = type
 		end
 	end
+
+	-- Generate a mini map
+	local miniMapData = love.image.newImageData(width, height)
+	for x=1, width do
+		for y=1, height do
+			local type = types[x][y]
+
+			if type == WATER then miniMapData:setPixel(x - 1, y - 1, 31, 34, 222, 255)
+			elseif type == SAND then miniMapData:setPixel(x - 1, y - 1, 252, 227, 58, 255)
+			elseif type == GRASS then miniMapData:setPixel(x - 1, y - 1, 0, 128, 30, 255)
+			elseif type == ROCK then miniMapData:setPixel(x - 1, y - 1, 82, 82, 82, 255)
+			end
+		end
+	end
+	self.miniMap = love.graphics.newImage(miniMapData)
 
 	-- Calculate which transition tiles must be placed where using bitwise counting.
 	-- http://www.saltgames.com/2010/a-bitwise-method-for-applying-tilemaps/
@@ -135,6 +153,7 @@ function Map:generate(width, height)
 		end
 	end
 
+	-- Place some decals like shells and stones on the sand.
 	for x=1, self.width do
 		for y=1, self.height do
 			if self.tiles[x][y].type == SAND and math.random(100) < 3 then
@@ -144,7 +163,7 @@ function Map:generate(width, height)
 	end
 end
 
-function Map:generateIslandMask(width, height)
+function Map:generateIslandMask(width, height, maskDistance)
 	-- Generates a mask with values ranging from 0 to 1 with which to multiply
 	-- the height map.
 	-- Credit goes to http://breinygames.blogspot.nl/2012/06/generating-terrain-using-perlin-noise.html
@@ -156,12 +175,12 @@ function Map:generateIslandMask(width, height)
 		end
 	end
 
-	for i=1, math.floor(width * height * 0.85) do
-		local x = math.random(30, width - 30)
-		local y = math.random(30, height - 30)
+	for i=1, math.floor(width * height * 0.60) do
+		local x = math.random(maskDistance, width - maskDistance)
+		local y = math.random(maskDistance, height - maskDistance)
 
-		for j=1, math.floor(width * height * 0.05) do
-			mask[x][y] = mask[x][y] + 4
+		for j=1, math.floor(width * height * 0.1) do
+			mask[x][y] = mask[x][y] + 5
 
 			if mask[x][y] > 255 then mask[x][y] = 255 end
 			local value = mask[x][y]
@@ -196,7 +215,7 @@ function Map:generateIslandMask(width, height)
 		end
 	end
 
-	arrayToImage(mask, "islandMask")
+	utils.arrayToImage(mask, "islandMask")
 
 	return mask
 end
@@ -207,7 +226,6 @@ function Map:walkable(x, y)
 
 	if tileX >= 0 and tileX < self.width and tileY >= 0 and tileY < self.height then
 		local type = self.tiles[tileX + 1][tileY + 1].type
-		print(type)
 		
 		if type == WATER then return false end
 	else
