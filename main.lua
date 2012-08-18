@@ -10,17 +10,17 @@ function love.load()
 
 	love.graphics.setDefaultImageFilter("nearest", "nearest")
 
-	load_game()
+	game = Game.create()
 end
 
 function love.update(dt)
 	if gamestate == "game" then
-		update_game(dt)
+		game:update(dt)
 	end
 end
 
 function love.draw()
 	if gamestate == "game" then
-		draw_game()
+		game:draw()
 	end
 end

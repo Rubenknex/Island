@@ -1,4 +1,4 @@
-require "functions"
+require "utils"
 
 Camera = {}
 Camera.__index = Camera
@@ -18,8 +18,8 @@ function Camera:setPosition(pos)
 end
 
 function Camera:interpolate(pos, var)
-	self.x = math.lerp(self.x, pos.x, var)
-	self.y = math.lerp(self.y, pos.y, var)
+	self.x = utils.lerp(self.x, pos.x, var)
+	self.y = utils.lerp(self.y, pos.y, var)
 end
 
 function Camera:move(offset)
