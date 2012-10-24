@@ -6,21 +6,21 @@ You have become stranded on an island in the middle of the ocean,
 require "game"
 
 function love.load()
-	gamestate = "game"
+    gamestate = "game"
 
-	love.graphics.setDefaultImageFilter("nearest", "nearest")
+    love.graphics.setDefaultImageFilter("nearest", "nearest")
 
-	game = Game.create()
+    game = Game.create()
 end
 
 function love.update(dt)
-	if gamestate == "game" then
-		game:update(dt)
-	end
+    if gamestate == "game" then
+        game:update(dt)
+    end
 end
 
 function love.draw()
-	if gamestate == "game" then
-		game:draw()
-	end
+    if gamestate == "game" then
+        game:draw()
+    end
 end
