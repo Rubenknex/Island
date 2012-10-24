@@ -1,31 +1,29 @@
 require "utils"
-require "perlinnoise"
+require "noise"
 require "tile"
 require "vec2"
-
-TILE_SIZE = 16
-DRAW_SIZE = 32
-SCREEN_COLUMNS = 640 / DRAW_SIZE
-SCREEN_ROWS = 480 / DRAW_SIZE
-
-WATER = 0
-SAND = 1
-GRASS = 2
-ROCK = 3
-
-WATER_LIMIT = 0.3
-SAND_LIMIT = 0.4
-GRASS_LIMIT = 0.65
-ROCK_LIMIT = 1.0
 
 Map = {}
 Map.__index = Map
 
-function Map.create()
+Map.TILE_SIZE = 16
+Map.DRAW_SIZE = 32
+Map.COLUMNS = 640 / Map.DRAW_SIZE
+Map.ROWS = 480 / Map.DRAW_SIZE
+Map.WATER = 0
+Map.SAND = 1
+Map.GRASS = 2
+Map.ROCK = 3
+Map.WATER_LIMIT = 0.3
+Map.SAND_LIMIT = 0.4
+Map.GRASS_LIMIT = 0.65
+Map.ROCK_LIMIT = 1.0
+
+function Map.create(width, height)
 	local self = {}
 	setmetatable(self, Map)
 
-	self:generate(128, 128)
+	self:generate(width, height)
 
 	self.tileset = love.graphics.newImage("data/tileset.png")
 	self.quads = {}
@@ -39,76 +37,43 @@ function Map.create()
 	self.decals = love.graphics.newImage("data/decals.png")
 	self.decalQuads = {}
 	for x=0, 2 do
-		self.decalQuads[x + 1] = love.graphics.newQuad(x * TILE_SIZE, 0, TILE_SIZE, TILE_SIZE, self.decals:getWidth(), self.decals:getHeight())
+		self.decalQuads[x + 1] = love.graphics.newQuad(x * Map.TILE_SIZE, 0, Map.TILE_SIZE, Map.TILE_SIZE, self.decals:getWidth(), self.decals:getHeight())
 	end
 
 	return self
 end
 
-function Map:update(dt)
-	
-end
-
-function Map:draw()
-	local startX = math.floor(camera.x / DRAW_SIZE)
-	local startY = math.floor(camera.y / DRAW_SIZE)
-	local endX = startX + SCREEN_COLUMNS + 1
-	local endY = startY + SCREEN_ROWS + 1
-
-	for x=startX, endX do
-		for y=startY, endY do
-			if x >= 0 and y >= 0 and x < self.width and y < self.height then
-				local posX = x * DRAW_SIZE - camera.x
-				local posY = y * DRAW_SIZE - camera.y
-				
-				local currentTile = self.tiles[x + 1][y + 1]
-
-				love.graphics.drawq(self.tileset, self.quads[currentTile.type + 1][1], posX, posY, 0, DRAW_SIZE / TILE_SIZE)
-				
-				if currentTile.transition > 0 then
-					love.graphics.drawq(self.tileset, self.quads[currentTile.type + 1 + 1][currentTile.transition + 1], posX, posY, 0, DRAW_SIZE / TILE_SIZE)
-				end
-
-				if currentTile.decal ~= nil then
-					love.graphics.drawq(self.decals, self.decalQuads[currentTile.decal], posX, posY, 0, DRAW_SIZE / TILE_SIZE)
-				end
-			end
-		end
-	end
-end
-
 function Map:generate(width, height)
 	self.width, self.height = width, height
 
-	local perlin = Perlin2D.create(width, height, 0.8, 6)
-	local data = perlin:generate()
-	
-	local mask = self:generateIslandMask(width, height, 30)
+	local data = noise.fractionalBrownianMotion(width, height, 1.0, 1.0, 0.7, 6, os.time())
+	utils.arrayToImage(data, "1 - Noise")
+
+	local islandMask = self:generateIslandMask(width, height, 30)
+	utils.arrayToImage(islandMask, "2 - Mask")
 
 	for x=1, width do
 		for y=1, height do
-			data[x][y] = data[x][y] * mask[x][y]
+			data[x][y] = data[x][y] * islandMask[x][y]
 		end
 	end
-
-	utils.arrayToImage(data, "maskedPerlin")
+	utils.arrayToImage(data, "3 - Masked")
 
 	data = utils.smoothenHeightMap(data, 5)
-
-	utils.arrayToImage(data, "smoothedPerlin")
+	utils.arrayToImage(data, "4 - Smoothened")
 
 	local types = {}
 	for x=1, width do
 		types[x] = {}
 
 		for y=1, height do
-			local type = WATER
+			local type = Map.WATER
 			local value = data[x][y]
 
-			if value < WATER_LIMIT then type = WATER
-			elseif value < SAND_LIMIT then type = SAND
-			elseif value < GRASS_LIMIT then type = GRASS
-			elseif value < ROCK_LIMIT then type = ROCK
+			if value < Map.WATER_LIMIT then type = Map.WATER
+			elseif value < Map.SAND_LIMIT then type = Map.SAND
+			elseif value < Map.GRASS_LIMIT then type = Map.GRASS
+			elseif value < Map.ROCK_LIMIT then type = Map.ROCK
 			end
 
 			types[x][y] = type
@@ -121,10 +86,10 @@ function Map:generate(width, height)
 		for y=1, height do
 			local type = types[x][y]
 
-			if type == WATER then miniMapData:setPixel(x - 1, y - 1, 31, 34, 222, 255)
-			elseif type == SAND then miniMapData:setPixel(x - 1, y - 1, 252, 227, 58, 255)
-			elseif type == GRASS then miniMapData:setPixel(x - 1, y - 1, 0, 128, 30, 255)
-			elseif type == ROCK then miniMapData:setPixel(x - 1, y - 1, 82, 82, 82, 255)
+			if type == Map.WATER then miniMapData:setPixel(x - 1, y - 1, 31, 34, 222, 255)
+			elseif type == Map.SAND then miniMapData:setPixel(x - 1, y - 1, 252, 227, 58, 255)
+			elseif type == Map.GRASS then miniMapData:setPixel(x - 1, y - 1, 0, 128, 30, 255)
+			elseif type == Map.ROCK then miniMapData:setPixel(x - 1, y - 1, 82, 82, 82, 255)
 			end
 		end
 	end
@@ -156,7 +121,7 @@ function Map:generate(width, height)
 	-- Place some decals like shells and stones on the sand.
 	for x=1, self.width do
 		for y=1, self.height do
-			if self.tiles[x][y].type == SAND and math.random(100) < 3 then
+			if self.tiles[x][y].type == Map.SAND and math.random(100) < 3 then
 				self.tiles[x][y].decal = math.random(1, 3)
 			end
 		end
@@ -215,22 +180,52 @@ function Map:generateIslandMask(width, height, maskDistance)
 		end
 	end
 
-	utils.arrayToImage(mask, "islandMask")
-
 	return mask
 end
 
 function Map:walkable(x, y)
-	tileX = math.floor(x / DRAW_SIZE)
-	tileY = math.floor(y / DRAW_SIZE)
+	tileX = math.floor(x / Map.DRAW_SIZE)
+	tileY = math.floor(y / Map.DRAW_SIZE)
 
 	if tileX >= 0 and tileX < self.width and tileY >= 0 and tileY < self.height then
 		local type = self.tiles[tileX + 1][tileY + 1].type
 		
-		if type == WATER then return false end
+		if type == Map.WATER then return false end
 	else
 		return false
 	end
 
 	return true
+end
+
+function Map:update(dt)
+	
+end
+
+function Map:draw()
+	local startX = math.floor(camera.x / Map.DRAW_SIZE)
+	local startY = math.floor(camera.y / Map.DRAW_SIZE)
+	local endX = startX + Map.COLUMNS + 1
+	local endY = startY + Map.ROWS + 1
+
+	for x=startX, endX do
+		for y=startY, endY do
+			if x >= 0 and y >= 0 and x < self.width and y < self.height then
+				local posX = x * Map.DRAW_SIZE - camera.x
+				local posY = y * Map.DRAW_SIZE - camera.y
+				
+				local currentTile = self.tiles[x + 1][y + 1]
+
+				love.graphics.drawq(self.tileset, self.quads[currentTile.type + 1][1], posX, posY, 0, Map.DRAW_SIZE / Map.TILE_SIZE)
+				
+				if currentTile.transition > 0 then
+					love.graphics.drawq(self.tileset, self.quads[currentTile.type + 1 + 1][currentTile.transition + 1], posX, posY, 0, Map.DRAW_SIZE / Map.TILE_SIZE)
+				end
+
+				if currentTile.decal ~= nil then
+					love.graphics.drawq(self.decals, self.decalQuads[currentTile.decal], posX, posY, 0, Map.DRAW_SIZE / Map.TILE_SIZE)
+				end
+			end
+		end
+	end
 end

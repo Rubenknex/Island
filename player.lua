@@ -1,3 +1,4 @@
+require "map"
 require "rect"
 require "utils"
 
@@ -22,7 +23,7 @@ function Player.create(x, y)
 
 	self.pos = Vec2.create(0, 0)
 	while not map:walkable(self.pos.x, self.pos.y) do
-		self.pos = Vec2.create(math.random(map.width) * DRAW_SIZE, math.random(map.height) * DRAW_SIZE)
+		self.pos = Vec2.create(math.random(map.width) * Map.DRAW_SIZE, math.random(map.height) * Map.DRAW_SIZE)
 	end
 
 	self.circleOffset = Vec2.create(0, 18)
@@ -96,7 +97,7 @@ function Player:handleCollision(dt)
 	local circlePos = self.pos + self.circleOffset
 	local left, top = circlePos.x - self.circleRadius, circlePos.y - self.circleRadius
 	local right, bottom = circlePos.x + self.circleRadius, circlePos.y + self.circleRadius
-	local tSize = DRAW_SIZE
+	local tSize = Map.DRAW_SIZE
 	local tLeft, tTop = math.floor(left / tSize), math.floor(top / tSize)
 	local tRight, tBottom = math.floor(right / tSize), math.floor(bottom / tSize)
 	

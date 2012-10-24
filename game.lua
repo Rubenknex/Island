@@ -27,7 +27,7 @@ function Game.create()
 	local self = {}
 	setmetatable(self, Game)
 
-	map = Map.create()
+	map = Map.create(128, 128)
 	camera = Camera.create(0, 0, 640, 480)
 	player = Player.create(320, 240)
 
@@ -61,7 +61,7 @@ end
 
 function Game:updateUI(dt)
 	local mX, mY = love.mouse.getPosition()
-	--local mD = 
+	
 	self.showInventory = self.inventoryButtonRect:contains(mX, mY)
 	self.showMap = self.mapButtonRect:contains(mX, mY)
 end
