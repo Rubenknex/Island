@@ -21,8 +21,7 @@ function noise.fractionalBrownianMotion(width, height, frequency, amplitude, per
             local amplitude = startAmplitude
 
             for octave=1, octaves do
-                value = perlin.noise((x * period) * frequency, (y * period) * frequency)
-                total = total + value * amplitude
+                total = total + perlin.noise((x * period) * frequency, (y * period) * frequency) * amplitude
 
                 frequency = frequency * 2
                 amplitude = amplitude * persistence

@@ -1,0 +1,9 @@
+Add animals to the game, examples:
+- Crabs/turtles on the beach
+- Fish in the water
+- Monkeys in the forest
+
+Add plants to the game, examples:
+- Ferns
+- Palm trees, coconut trees
+- Vines

@@ -25,7 +25,7 @@ function Map.create(width, height)
 
     self:generate(width, height)
 
-    self.tileset = love.graphics.newImage("data/tileset.png")
+    self.tileset = love.graphics.newImage("data/terrain.png")
     self.quads = {}
     for y=0, 3 do
         self.quads[y + 1] = {}
