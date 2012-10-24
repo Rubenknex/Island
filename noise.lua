@@ -2,13 +2,6 @@ require "perlin"
 
 noise = {}
 
--- Generates a 2D perlin noise map with values within the range 0-1
--- width, height: The dimensions of the noise map
--- frequency: The initial frequency of the noise
--- amplitude: The initial amplitude of the noise
--- persistence: Multiplied with the amplitude every octave
--- octaves: The amount of layers of noise to add to each other
--- seed: A seed for the noise, the same seed will produce the same noise maps
 function noise.fractionalBrownianMotion(width, height, frequency, amplitude, persistence, octaves, seed)
 	perlin.seed(seed)
 
@@ -49,18 +42,4 @@ function noise.fractionalBrownianMotion(width, height, frequency, amplitude, per
 	end
 
 	return data
-end
-
-function noise.perturb(data, noise)
-	local width, height = #data, #data[1]
-	local out = {}
-
-	for x=1, width do
-		out[x] = {}
-		for y=1, height do
-			
-		end
-	end
-
-
 end
