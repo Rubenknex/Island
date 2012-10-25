@@ -14,6 +14,7 @@ function Crab.create(x, y)
 
 	self.speed = 50
 	self.direction = Vec2.create()
+    self.degrees = 0
 	self.target = Vec2.create()
 	self.minRange = 20
 	self.maxRange = 40
@@ -77,7 +78,15 @@ function Crab:handleCollision(dt)
 end
 
 function Crab:chooseTarget()
-	local angle = math.rad(math.random(0, 359))
+    local degrees = math.random(0, 359)
+	local angle = math.rad(degrees)
+
+    -- Set the correct quad facing the target
+    if degrees >= 315 or degrees <= 45 then self.currentQuad = self.qRight
+    elseif degrees >= 45 and degrees <= 135 then self.currentQuad = self.qDown
+    elseif degrees >= 135 and degrees <= 225 then self.currentQuad = self.qLeft
+    elseif degrees >= 225 and degrees <= 315 then self.currentQuad = self.qUp end
+
 	self.direction = Vec2.create(math.cos(angle), math.sin(angle))
 	local distance = math.random(self.minRange, self.maxRange)
 	self.target = self.pos + self.direction * distance
@@ -110,13 +119,10 @@ function Crab:update(dt)
 end
 
 function Crab:draw()
-	if self.walking then
-		love.graphics.setColor(128, 255, 128, 255)
-	else
-		love.graphics.setColor(255, 255, 255, 255)
-	end
+	love.graphics.setColor(255, 255, 255, 255)
+
     love.graphics.drawq(self.image, self.currentQuad, self.pos.x - camera.x, self.pos.y - camera.y, 0, self.scale, self.scale, 8, 8)
 
-    love.graphics.setColor(255, 0, 0)
-    love.graphics.circle("line", self.pos.x + self.circleOffset.x - camera.x, self.pos.y + self.circleOffset.y - camera.y, self.circleRadius)
+    --love.graphics.setColor(255, 0, 0)
+    --love.graphics.circle("line", self.pos.x + self.circleOffset.x - camera.x, self.pos.y + self.circleOffset.y - camera.y, self.circleRadius)
 end
