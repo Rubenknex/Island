@@ -22,7 +22,7 @@ function Player.create(x, y)
     setmetatable(self, Player)
 
     self.pos = Vec2.create(0, 0)
-    while not map:walkable(self.pos.x, self.pos.y) do
+    while not map:walkableAt(self.pos.x, self.pos.y) do
         self.pos = Vec2.create(math.random(map.width) * Map.DRAW_SIZE, math.random(map.height) * Map.DRAW_SIZE)
     end
 
@@ -63,8 +63,8 @@ function Player:draw()
     love.graphics.setColor(255, 255, 255, 255)
     love.graphics.drawq(self.image, self.currentQuad, self.pos.x - camera.x, self.pos.y - camera.y, 0, self.scale, self.scale, 8, 8)
     
-    --love.graphics.setColor(255, 0, 0)
-    --love.graphics.circle("line", self.pos.x + self.circleOffset.x - camera.x, self.pos.y + self.circleOffset.y - camera.y, self.circleRadius)
+    love.graphics.setColor(255, 0, 0)
+    love.graphics.circle("line", self.pos.x + self.circleOffset.x - camera.x, self.pos.y + self.circleOffset.y - camera.y, self.circleRadius)
 end
 
 function Player:handleInput(dt)
@@ -102,28 +102,28 @@ function Player:handleCollision(dt)
     local tRight, tBottom = math.floor(right / tSize), math.floor(bottom / tSize)
     
     local result, normal, length = false, 0, 0
-    if not map:walkable(left, top) then
+    if not map:walkableAt(left, top) then
         result, normal, length = utils.collideRectCircle(Rect.create(tLeft * tSize, tTop * tSize, tSize, tSize), circlePos, self.circleRadius)
         if result then
             self.pos = self.pos + normal * length
         end
     end
 
-    if not map:walkable(right, top) then
+    if not map:walkableAt(right, top) then
         result, normal, length = utils.collideRectCircle(Rect.create(tRight * tSize, tTop * tSize, tSize, tSize), circlePos, self.circleRadius)
         if result then
             self.pos = self.pos + normal * length
         end
     end
 
-    if not map:walkable(right, bottom) then
+    if not map:walkableAt(right, bottom) then
         result, normal, length = utils.collideRectCircle(Rect.create(tRight * tSize, tBottom * tSize, tSize, tSize), circlePos, self.circleRadius)
         if result then
             self.pos = self.pos + normal * length
         end
     end
 
-    if not map:walkable(left, bottom) then
+    if not map:walkableAt(left, bottom) then
         result, normal, length = utils.collideRectCircle(Rect.create(tLeft * tSize, tBottom * tSize, tSize, tSize), circlePos, self.circleRadius)
         if result then
             self.pos = self.pos + normal * length

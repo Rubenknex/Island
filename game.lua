@@ -1,7 +1,9 @@
 require "camera"
+require "entities"
 require "map"
 require "player"
 require "rect"
+require "vec2"
 
 --[[
 IDEAS:
@@ -31,6 +33,16 @@ function Game.create()
     camera = Camera.create(0, 0, 640, 480)
     player = Player.create(320, 240)
 
+    entities = {}
+    for i=1, 10 do
+        local pos = Vec2.create(0, 0)
+        while map:tileTypeAt(pos.x, pos.y) ~= Map.SAND do
+            pos = Vec2.create(math.random(map.width) * Map.DRAW_SIZE, math.random(map.height) * Map.DRAW_SIZE)
+        end
+
+        table.insert(entities, Crab.create(pos.x, pos.y))
+    end
+
     self.mapButtonRect = Rect.create(640 - 35, 480 - 35, 30, 30)
     self.inventoryButtonRect = Rect.create(640 - 35 - 35, 480 - 35, 30, 30)
     self.showMap = false
@@ -43,6 +55,10 @@ function Game:update(dt)
     map:update(dt)
     player:update(dt)
 
+    for k, v in pairs(entities) do
+        v:update(dt)
+    end
+
     self:updateUI(dt)
 
     local screenPos = Vec2.create(player.pos.x - camera.width / 2, player.pos.y - camera.height / 2)
@@ -52,6 +68,10 @@ end
 function Game:draw()
     map:draw()
     player:draw()
+
+    for k, v in pairs(entities) do
+        v:draw()
+    end
 
     self:drawUI()
 
@@ -93,7 +113,7 @@ function Game:drawUI()
 
     if self.showMap then 
         love.graphics.setColor(200, 161, 123)
-        love.graphics.draw(map.miniMap, 640 - 256 - 5, 480 - 256 - 40 - 5, 0, 2)
+        love.graphics.draw(map.minimap, 640 - 256 - 5, 480 - 256 - 40 - 5, 0, 2)
     end
 
     if self.showInventory then

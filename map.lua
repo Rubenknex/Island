@@ -80,21 +80,6 @@ function Map:generate(width, height)
         end
     end
 
-    -- Generate a mini map
-    local miniMapData = love.image.newImageData(width, height)
-    for x=1, width do
-        for y=1, height do
-            local type = types[x][y]
-
-            if type == Map.WATER then miniMapData:setPixel(x - 1, y - 1, 31, 34, 222, 255)
-            elseif type == Map.SAND then miniMapData:setPixel(x - 1, y - 1, 252, 227, 58, 255)
-            elseif type == Map.GRASS then miniMapData:setPixel(x - 1, y - 1, 0, 128, 30, 255)
-            elseif type == Map.ROCK then miniMapData:setPixel(x - 1, y - 1, 82, 82, 82, 255)
-            end
-        end
-    end
-    self.miniMap = love.graphics.newImage(miniMapData)
-
     -- Calculate which transition tiles must be placed where using bitwise counting.
     -- http://www.saltgames.com/2010/a-bitwise-method-for-applying-tilemaps/
     self.tiles = {}
@@ -118,14 +103,9 @@ function Map:generate(width, height)
         end
     end
 
-    -- Place some decals like shells and stones on the sand.
-    for x=1, self.width do
-        for y=1, self.height do
-            if self.tiles[x][y].type == Map.SAND and math.random(100) < 3 then
-                self.tiles[x][y].decal = math.random(1, 3)
-            end
-        end
-    end
+    self:generateMinimap()
+
+    self:placeDecals()
 end
 
 function Map:generateIslandMask(width, height, maskDistance)
@@ -183,19 +163,52 @@ function Map:generateIslandMask(width, height, maskDistance)
     return mask
 end
 
-function Map:walkable(x, y)
+function Map:placeDecals()
+    for x=1, self.width do
+        for y=1, self.height do
+            if self.tiles[x][y].type == Map.SAND and math.random(100) < 3 then
+                self.tiles[x][y].decal = math.random(1, 3)
+            end
+        end
+    end
+end
+
+function Map:placePlants()
+
+end
+
+function Map:generateMinimap()
+    local minimapData = love.image.newImageData(self.width, self.height)
+    for x=1, self.width do
+        for y=1, self.height do
+            local type = self.tiles[x][y].type
+
+            if type == Map.WATER then minimapData:setPixel(x - 1, y - 1, 31, 34, 222, 255)
+            elseif type == Map.SAND then minimapData:setPixel(x - 1, y - 1, 252, 227, 58, 255)
+            elseif type == Map.GRASS then minimapData:setPixel(x - 1, y - 1, 0, 128, 30, 255)
+            elseif type == Map.ROCK then minimapData:setPixel(x - 1, y - 1, 82, 82, 82, 255)
+            end
+        end
+    end
+
+    self.minimap = love.graphics.newImage(minimapData)
+end
+
+function Map:walkableAt(x, y)
+    local type = self:tileTypeAt(x, y)
+
+    return type ~= nil and type ~= Map.WATER
+end
+
+function Map:tileTypeAt(x, y)
     tileX = math.floor(x / Map.DRAW_SIZE)
     tileY = math.floor(y / Map.DRAW_SIZE)
 
     if tileX >= 0 and tileX < self.width and tileY >= 0 and tileY < self.height then
-        local type = self.tiles[tileX + 1][tileY + 1].type
-        
-        if type == Map.WATER then return false end
+        return self.tiles[tileX + 1][tileY + 1].type
     else
-        return false
+        return nil
     end
-
-    return true
 end
 
 function Map:update(dt)
