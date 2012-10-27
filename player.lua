@@ -22,10 +22,12 @@ function Player.create(x, y)
     local self = {}
     setmetatable(self, Player)
 
+    self.type = "player"
     self.pos = Vec2.create(0, 0)
     while not map:walkableAt(self.pos.x, self.pos.y) do
         self.pos = Vec2.create(math.random(map.width) * Map.DRAW_SIZE, math.random(map.height) * Map.DRAW_SIZE)
     end
+    self.collidable = true
 
     self.circleOffset = Vec2.create(0, 18)
     self.circleRadius = 6

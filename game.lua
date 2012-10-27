@@ -33,6 +33,17 @@ function Game.create()
     camera = Camera.create(0, 0, 640, 480)
     player = Player.create(320, 240)
 
+    self:placeEntities()
+
+    self.mapButtonRect = Rect.create(640 - 35, 480 - 35, 30, 30)
+    self.inventoryButtonRect = Rect.create(640 - 35 - 35, 480 - 35, 30, 30)
+    self.showMap = false
+    self.showInventory = false
+
+    return self
+end
+
+function Game:placeEntities()
     entities = {}
     for i=1, 10 do
         local pos = Vec2.create(0, 0)
@@ -42,13 +53,6 @@ function Game.create()
 
         table.insert(entities, Crab.create(pos.x, pos.y))
     end
-
-    self.mapButtonRect = Rect.create(640 - 35, 480 - 35, 30, 30)
-    self.inventoryButtonRect = Rect.create(640 - 35 - 35, 480 - 35, 30, 30)
-    self.showMap = false
-    self.showInventory = false
-
-    return self
 end
 
 function Game:update(dt)
@@ -62,7 +66,7 @@ function Game:update(dt)
     self:updateUI(dt)
 
     local screenPos = Vec2.create(player.pos.x - camera.width / 2, player.pos.y - camera.height / 2)
-    camera:interpolate(screenPos, 0.1)
+    camera:interpolate(screenPos, 0.05)
 end
 
 function Game:draw()

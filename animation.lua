@@ -1,12 +1,6 @@
 Animation = {}
 Animation.__index = Animation
 
---[[
-Usage:
-    Animation.addSequence("walk", 0, 0, 16, 16, 5) Add a sequence of 5 frames
-    Animation.playSequence("walk", "single", 0.5)
-]]--
-
 function Animation.create(image)
     local self = {}
     setmetatable(self, Animation)
@@ -20,6 +14,7 @@ function Animation.create(image)
     -- 'paused': Show a single frame
     -- 'once': Complete the animation one time
     -- 'loop': Loop the animation until stopped
+    -- 'bounce': Go through the animation in both directions
     self.mode = nil
     self.interval = 0
     self.timer = 0
@@ -72,30 +67,16 @@ function Animation:getCurrentQuad()
 end
 
 function Animation:update(dt)
-    if self.mode ~= nil then
-        if self.mode == "paused" then
+    if self.mode == "once" or self.mode == "loop" then
+        self.timer = self.timer + dt
 
-        elseif self.mode == "once" then
-            self.timer = self.timer + dt
+        if self.timer > self.interval then
+            self.timer = 0
+            self.currentFrame = self.currentFrame + 1
 
-            if self.timer > self.interval then
-                self.timer = 0
-                self.currentFrame = self.currentFrame + 1
-
-                if self.currentFrame > #self.sequences[self.currentSequence] then
-                    self.mode = nil
-                end
-            end
-        elseif self.mode == "loop" then
-            self.timer = self.timer + dt
-
-            if self.timer > self.interval then
-                self.timer = 0
-                self.currentFrame = self.currentFrame + 1
-
-                if self.currentFrame > #self.sequences[self.currentSequence] then
-                    self.currentFrame = 1
-                end
+            if self.currentFrame > #self.sequences[self.currentSequence] then
+                if self.mode == "once" then self.mode = nil end
+                if self.mode == "loop" then self.currentFrame = 1 end
             end
         end
     end
