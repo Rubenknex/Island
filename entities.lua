@@ -1,4 +1,18 @@
+require "animation"
 require "map"
+
+--[[
+Entity properties:
+- pos (Vec2)
+- collidable
+
+Entity methods:
+- update(dt)
+- render()
+- getBoundingCircle()
+- collisionWith()
+
+]]--
 
 Crab = {}
 Crab.__index = Crab
@@ -23,12 +37,11 @@ function Crab.create(x, y)
 	self.walkTime = 0.0
 	self.idleTime = 0.0
 
-	self.image = love.graphics.newImage("data/crab.png")
-    self.qDown = love.graphics.newQuad(0, 0, 16, 16, self.image:getWidth(), self.image:getHeight())
-    self.qUp = love.graphics.newQuad(16, 0, 16, 16, self.image:getWidth(), self.image:getHeight())
-    self.qLeft = love.graphics.newQuad(32, 0, 16, 16, self.image:getWidth(), self.image:getHeight())
-    self.qRight = love.graphics.newQuad(48, 0, 16, 16, self.image:getWidth(), self.image:getHeight())
-    self.currentQuad = self.qDown
+    self.animation = Animation.create(love.graphics.newImage("data/crab.png"))
+    self.animation:addSequence("down", 0, 0, 16, 16, 16, 0, 2)
+    self.animation:addSequence("up", 0, 16, 16, 16, 16, 0, 2)
+    self.animation:addSequence("left", 0, 32, 16, 16, 16, 0, 2)
+    self.animation:addSequence("right", 0, 48, 16, 16, 16, 0, 2)
 
     self.scale = 2
 
@@ -82,10 +95,10 @@ function Crab:chooseTarget()
 	local angle = math.rad(degrees)
 
     -- Set the correct quad facing the target
-    if degrees >= 315 or degrees <= 45 then self.currentQuad = self.qRight
-    elseif degrees >= 45 and degrees <= 135 then self.currentQuad = self.qDown
-    elseif degrees >= 135 and degrees <= 225 then self.currentQuad = self.qLeft
-    elseif degrees >= 225 and degrees <= 315 then self.currentQuad = self.qUp end
+    if degrees >= 315 or degrees <= 45 then self.animation:playSequence("right", "loop", 0.2)
+    elseif degrees >= 45 and degrees <= 135 then self.animation:playSequence("down", "loop", 0.2)
+    elseif degrees >= 135 and degrees <= 225 then self.animation:playSequence("left", "loop", 0.2)
+    elseif degrees >= 225 and degrees <= 315 then self.animation:playSequence("up", "loop", 0.2) end
 
 	self.direction = Vec2.create(math.cos(angle), math.sin(angle))
 	local distance = math.random(self.minRange, self.maxRange)
@@ -102,6 +115,8 @@ function Crab:update(dt)
 			self.walking = false
 			self.collided = false
 			self.idleTime = 1.0 + math.random() * 2.0
+
+            self.animation:pauseSequence(1)
 		else
 			self.pos = self.pos + movement
 			self.walkTime = self.walkTime - dt
@@ -116,12 +131,14 @@ function Crab:update(dt)
 	end
 
 	self:handleCollision()
+
+    self.animation:update(dt)
 end
 
 function Crab:draw()
 	love.graphics.setColor(255, 255, 255, 255)
 
-    love.graphics.drawq(self.image, self.currentQuad, self.pos.x - camera.x, self.pos.y - camera.y, 0, self.scale, self.scale, 8, 8)
+    love.graphics.drawq(self.animation.image, self.animation:getCurrentFrame(), self.pos.x - camera.x, self.pos.y - camera.y, 0, self.scale, self.scale, 8, 8)
 
     --love.graphics.setColor(255, 0, 0)
     --love.graphics.circle("line", self.pos.x + self.circleOffset.x - camera.x, self.pos.y + self.circleOffset.y - camera.y, self.circleRadius)
