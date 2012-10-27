@@ -78,6 +78,8 @@ function Player:handleInput(dt)
     if self.dir:length() > 0 then
         local speed = love.keyboard.isDown("lshift") and self.sprintSpeed or self.normalSpeed
         self.pos = self.pos + self.dir:normalized() * speed * dt
+    else
+        self.animation:pauseSequence(1)
     end
 end
 
@@ -132,6 +134,5 @@ function Player:draw()
     love.graphics.setColor(255, 255, 255, 255)
     love.graphics.drawq(self.animation.image, self.animation:getCurrentQuad(), self.pos.x - camera.x, self.pos.y - camera.y, 0, self.scale, self.scale, 8, 8)
     
-    love.graphics.setColor(255, 0, 0)
-    love.graphics.circle("line", self.pos.x + self.circleOffset.x - camera.x, self.pos.y + self.circleOffset.y - camera.y, self.circleRadius)
+    utils.debugDrawCircle(255, 0, 0, 255, self.pos.x + self.circleOffset.x - camera.x, self.pos.y + self.circleOffset.y - camera.y, self.circleRadius)
 end

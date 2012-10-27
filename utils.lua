@@ -121,3 +121,19 @@ function utils.arrayToImage(array, name)
     end
     imgData:encode(name .. ".png")
 end
+
+function utils.debugDrawLine(r, g, b, a, x1, y1, x2, y2)
+    if debug then
+        love.graphics.setColor(r, g, b, a)
+        love.graphics.setLine(1, "rough")
+        love.graphics.line(x1, y1, x2, y2)
+    end
+end
+
+function utils.debugDrawCircle(r, g, b, a, x, y, radius)
+    if debug then
+        love.graphics.setColor(r, g, b, a)
+        love.graphics.setLine(1, "rough")
+        love.graphics.circle("line", x, y, radius)
+    end
+end

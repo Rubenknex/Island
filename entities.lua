@@ -146,6 +146,4 @@ function Crab:draw()
 
     love.graphics.drawq(self.animation.image, self.animation:getCurrentQuad(), self.position.x - camera.x, self.position.y - camera.y, 0, self.scale, self.scale, 8, 8)
 
-    --love.graphics.setColor(255, 0, 0)
-    --love.graphics.circle("line", self.pos.x + self.circleOffset.x - camera.x, self.pos.y + self.circleOffset.y - camera.y, self.circleRadius)
-end
+    utils.debugDrawCircle(255, 0, 0, 255, self.position.x - camera.x, self.position.y - camera.y, self.circleRadius)end

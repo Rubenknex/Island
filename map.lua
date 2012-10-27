@@ -222,13 +222,17 @@ function Map:draw()
     local endY = startY + Map.ROWS + 1
 
     for x=startX, endX do
+        local posX = x * Map.DRAW_SIZE - camera.x
+        utils.debugDrawLine(255, 0, 0, 255, posX, startY * Map.DRAW_SIZE - camera.y, posX, endY * Map.DRAW_SIZE - camera.y)
+
         for y=startY, endY do
+            local posY = y * Map.DRAW_SIZE - camera.y
+            utils.debugDrawLine(255, 0, 0, 255, startX * Map.DRAW_SIZE - camera.x, posY, endX * Map.DRAW_SIZE - camera.x, posY)
+
             if x >= 0 and y >= 0 and x < self.width and y < self.height then
-                local posX = x * Map.DRAW_SIZE - camera.x
-                local posY = y * Map.DRAW_SIZE - camera.y
-                
                 local currentTile = self.tiles[x + 1][y + 1]
 
+                love.graphics.setColor(255, 255, 255, 255)
                 love.graphics.drawq(self.tileset, self.quads[currentTile.type + 1][1], posX, posY, 0, Map.DRAW_SIZE / Map.TILE_SIZE)
                 
                 if currentTile.transition > 0 then

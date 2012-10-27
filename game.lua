@@ -28,7 +28,7 @@ Game.__index = Game
 function Game.create()
     local self = {}
     setmetatable(self, Game)
-
+    
     map = Map.create(128, 128)
     camera = Camera.create(0, 0, 640, 480)
     player = Player.create(320, 240)
