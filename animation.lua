@@ -27,12 +27,12 @@ function Animation.create(image)
     return self
 end
 
-function Animation:addSequence(name, x, y, frameWidth, frameHeight, xOffset, yOffset, length)
+function Animation:addSequence(name, x, y, frameWidth, frameHeight, length)
     local sequence = {}
 
     for i=1, length do
-        sequence[i] = love.graphics.newQuad(x + xOffset * (i - 1), 
-                                            y + yOffset * (i - 1), 
+        sequence[i] = love.graphics.newQuad(x + frameWidth * (i - 1), 
+                                            y, 
                                             frameWidth, frameHeight, 
                                             self.image:getWidth(), self.image:getHeight())
     end
@@ -63,7 +63,7 @@ function Animation:stopSequence()
     self.mode = nil
 end
 
-function Animation:getCurrentFrame()
+function Animation:getCurrentQuad()
     if self.mode ~= nil then
         return self.sequences[self.currentSequence][self.currentFrame]
     end
