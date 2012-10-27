@@ -97,10 +97,10 @@ function Crab:chooseTarget()
 	local angle = math.rad(degrees)
 
     -- Set the correct quad facing the target
-    if degrees >= 315 or degrees <= 45 then self.animation:playSequence("right", "loop", 0.2)
-    elseif degrees >= 45 and degrees <= 135 then self.animation:playSequence("down", "loop", 0.2)
-    elseif degrees >= 135 and degrees <= 225 then self.animation:playSequence("left", "loop", 0.2)
-    elseif degrees >= 225 and degrees <= 315 then self.animation:playSequence("up", "loop", 0.2) end
+    if degrees >= 315 or degrees <= 45 then self.animation:playSequence("up", "loop", 0.2)
+    elseif degrees >= 45 and degrees <= 135 then self.animation:playSequence("right", "loop", 0.2)
+    elseif degrees >= 135 and degrees <= 225 then self.animation:playSequence("down", "loop", 0.2)
+    elseif degrees >= 225 and degrees <= 315 then self.animation:playSequence("left", "loop", 0.2) end
 
 	self.direction = Vec2.create(math.cos(angle), math.sin(angle))
 	local distance = math.random(self.minRange, self.maxRange)
