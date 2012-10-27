@@ -3,13 +3,14 @@ require "map"
 
 --[[
 Entity properties:
-- pos (Vec2)
-- collidable
+- type (string)
+- position (Vec2)
+- collidable (boolean)
 
 Entity methods:
 - update(dt)
 - render()
-- getBoundingCircle()
+- getBoundingCircle() (x, y, radius)
 - collisionWith()
 
 ]]--
@@ -21,9 +22,10 @@ function Crab.create(x, y)
 	self = {}
 	setmetatable(self, Crab)
 
-	self.pos = Vec2.create(x, y)
+    self.type = "crab"
+	self.position = Vec2.create(x, y)
+    self.collidable = true
 
-	self.circleOffset = Vec2.create(0, 0)
     self.circleRadius = 6
 
 	self.speed = 50
@@ -38,10 +40,10 @@ function Crab.create(x, y)
 	self.idleTime = 0.0
 
     self.animation = Animation.create(love.graphics.newImage("data/crab.png"))
-    self.animation:addSequence("down", 0, 0, 16, 16, 16, 0, 2)
-    self.animation:addSequence("up", 0, 16, 16, 16, 16, 0, 2)
-    self.animation:addSequence("left", 0, 32, 16, 16, 16, 0, 2)
-    self.animation:addSequence("right", 0, 48, 16, 16, 16, 0, 2)
+    self.animation:addSequence("down", 0, 0, 16, 16, 2)
+    self.animation:addSequence("up", 0, 16, 16, 16, 2)
+    self.animation:addSequence("left", 0, 32, 16, 16, 2)
+    self.animation:addSequence("right", 0, 48, 16, 16, 2)
 
     self.scale = 2
 
@@ -49,7 +51,7 @@ function Crab.create(x, y)
 end
 
 function Crab:handleCollision(dt)
-    local circlePos = self.pos + self.circleOffset
+    local circlePos = self.position
     local left, top = circlePos.x - self.circleRadius, circlePos.y - self.circleRadius
     local right, bottom = circlePos.x + self.circleRadius, circlePos.y + self.circleRadius
     local tSize = Map.DRAW_SIZE
@@ -61,7 +63,7 @@ function Crab:handleCollision(dt)
         result, normal, length = utils.collideRectCircle(Rect.create(tLeft * tSize, tTop * tSize, tSize, tSize), circlePos, self.circleRadius)
         if result then
         	self.collided = true
-            self.pos = self.pos + normal * length
+            self.position = self.position + normal * length
         end
     end
 
@@ -69,7 +71,7 @@ function Crab:handleCollision(dt)
         result, normal, length = utils.collideRectCircle(Rect.create(tRight * tSize, tTop * tSize, tSize, tSize), circlePos, self.circleRadius)
         if result then
         	self.collided = true
-            self.pos = self.pos + normal * length
+            self.position = self.position + normal * length
         end
     end
 
@@ -77,7 +79,7 @@ function Crab:handleCollision(dt)
         result, normal, length = utils.collideRectCircle(Rect.create(tRight * tSize, tBottom * tSize, tSize, tSize), circlePos, self.circleRadius)
         if result then
         	self.collided = true
-            self.pos = self.pos + normal * length
+            self.position = self.position + normal * length
         end
     end
 
@@ -85,7 +87,7 @@ function Crab:handleCollision(dt)
         result, normal, length = utils.collideRectCircle(Rect.create(tLeft * tSize, tBottom * tSize, tSize, tSize), circlePos, self.circleRadius)
         if result then
         	self.collided = true
-            self.pos = self.pos + normal * length
+            self.position = self.position + normal * length
         end
     end
 end
@@ -102,23 +104,27 @@ function Crab:chooseTarget()
 
 	self.direction = Vec2.create(math.cos(angle), math.sin(angle))
 	local distance = math.random(self.minRange, self.maxRange)
-	self.target = self.pos + self.direction * distance
+	self.target = self.position + self.direction * distance
 	self.walkTime = distance / self.speed
+end
+
+function Crab:getBoundingCircle()
+    return self.position.x, self.position.y, self.circleRadius
 end
 
 function Crab:update(dt)
 	if self.walking then
 		local movement = self.direction * self.speed * dt
 
-		if self.walkTime <= 0.0 or self.collided or map:tileTypeAt(self.pos.x, self.pos.y) ~= Map.SAND then
-			self.pos = self.pos - movement
+		if self.walkTime <= 0.0 or self.collided or map:tileTypeAt(self.position.x, self.position.y) ~= Map.SAND then
+			self.position = self.position - movement
 			self.walking = false
 			self.collided = false
 			self.idleTime = 1.0 + math.random() * 2.0
 
             self.animation:pauseSequence(1)
 		else
-			self.pos = self.pos + movement
+			self.position = self.position + movement
 			self.walkTime = self.walkTime - dt
 		end
 	else
@@ -138,7 +144,7 @@ end
 function Crab:draw()
 	love.graphics.setColor(255, 255, 255, 255)
 
-    love.graphics.drawq(self.animation.image, self.animation:getCurrentFrame(), self.pos.x - camera.x, self.pos.y - camera.y, 0, self.scale, self.scale, 8, 8)
+    love.graphics.drawq(self.animation.image, self.animation:getCurrentQuad(), self.position.x - camera.x, self.position.y - camera.y, 0, self.scale, self.scale, 8, 8)
 
     --love.graphics.setColor(255, 0, 0)
     --love.graphics.circle("line", self.pos.x + self.circleOffset.x - camera.x, self.pos.y + self.circleOffset.y - camera.y, self.circleRadius)
