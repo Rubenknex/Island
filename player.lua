@@ -1,3 +1,4 @@
+require "animation"
 require "map"
 require "rect"
 require "utils"
@@ -29,12 +30,12 @@ function Player.create(x, y)
     self.circleOffset = Vec2.create(0, 18)
     self.circleRadius = 6
 
-    self.image = love.graphics.newImage("data/man.png")
-    self.qDown = love.graphics.newQuad(0, 0, 16, 16, self.image:getWidth(), self.image:getHeight())
-    self.qUp = love.graphics.newQuad(16, 0, 16, 16, self.image:getWidth(), self.image:getHeight())
-    self.qLeft = love.graphics.newQuad(32, 0, 16, 16, self.image:getWidth(), self.image:getHeight())
-    self.qRight = love.graphics.newQuad(48, 0, 16, 16, self.image:getWidth(), self.image:getHeight())
-    self.currentQuad = self.qDown
+    self.animation = Animation.create(love.graphics.newImage("data/man.png"))
+    self.animation:addSequence("down", 0, 0, 16, 16, 1)
+    self.animation:addSequence("up", 16, 0, 16, 16, 1)
+    self.animation:addSequence("left", 32, 0, 16, 16, 1)
+    self.animation:addSequence("right", 48, 0, 16, 16, 1)
+    self.animation:playSequence("down", "paused", 1)
 
     self.scale = 3
 
@@ -54,37 +55,24 @@ function Player.create(x, y)
     return self
 end
 
-function Player:update(dt)
-    self:handleInput(dt)
-    self:handleCollision(dt)
-end
-
-function Player:draw()
-    love.graphics.setColor(255, 255, 255, 255)
-    love.graphics.drawq(self.image, self.currentQuad, self.pos.x - camera.x, self.pos.y - camera.y, 0, self.scale, self.scale, 8, 8)
-    
-    love.graphics.setColor(255, 0, 0)
-    love.graphics.circle("line", self.pos.x + self.circleOffset.x - camera.x, self.pos.y + self.circleOffset.y - camera.y, self.circleRadius)
-end
-
 function Player:handleInput(dt)
     self.dir:set(0, 0)
 
     if love.keyboard.isDown("a") then
         self.dir.x = -1
-        self.currentQuad = self.qLeft
+        self.animation:playSequence("left", "paused", 1)
     end
     if love.keyboard.isDown("d") then
         self.dir.x = self.dir.x + 1
-        self.currentQuad = self.qRight
+        self.animation:playSequence("right", "paused", 1)
     end
     if love.keyboard.isDown("w") then
         self.dir.y = -1
-        self.currentQuad = self.qUp
+        self.animation:playSequence("up", "paused", 1)
     end
     if love.keyboard.isDown("s") then
         self.dir.y = self.dir.y + 1
-        self.currentQuad = self.qDown
+        self.animation:playSequence("down", "paused", 1)
     end
 
     if self.dir:length() > 0 then
@@ -129,4 +117,21 @@ function Player:handleCollision(dt)
             self.pos = self.pos + normal * length
         end
     end
+end
+
+function Player:getBoundingCircle()
+    return self.pos.x, self.pos.y, self.circleRadius
+end
+
+function Player:update(dt)
+    self:handleInput(dt)
+    self:handleCollision(dt)
+end
+
+function Player:draw()
+    love.graphics.setColor(255, 255, 255, 255)
+    love.graphics.drawq(self.animation.image, self.animation:getCurrentQuad(), self.pos.x - camera.x, self.pos.y - camera.y, 0, self.scale, self.scale, 8, 8)
+    
+    love.graphics.setColor(255, 0, 0)
+    love.graphics.circle("line", self.pos.x + self.circleOffset.x - camera.x, self.pos.y + self.circleOffset.y - camera.y, self.circleRadius)
 end
