@@ -30,7 +30,6 @@ function Game.create()
     setmetatable(self, Game)
     
     map = Map.create(128, 128)
-    camera = Camera.create(0, 0, 640, 480)
     player = Player.create(320, 240)
 
     self:placeEntities()
@@ -65,17 +64,22 @@ function Game:update(dt)
 
     self:updateUI(dt)
 
-    local screenPos = Vec2.create(player.pos.x - camera.width / 2, player.pos.y - camera.height / 2)
-    camera:interpolate(screenPos, 0.05)
+    camera:setPosition(player.pos.x - constants.SCREEN_WIDTH / 2, player.pos.y - constants.SCREEN_HEIGHT / 2)
 end
 
 function Game:draw()
+    camera.x = math.floor(camera.x + 0.5)
+    camera.y = math.floor(camera.y + 0.5)
+    camera:set()
+
     map:draw()
     player:draw()
 
     for k, v in pairs(entities) do
         v:draw()
     end
+
+    camera:unset()
 
     self:drawUI()
 

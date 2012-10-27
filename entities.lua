@@ -144,6 +144,7 @@ end
 function Crab:draw()
 	love.graphics.setColor(255, 255, 255, 255)
 
-    love.graphics.drawq(self.animation.image, self.animation:getCurrentQuad(), self.position.x - camera.x, self.position.y - camera.y, 0, self.scale, self.scale, 8, 8)
+    love.graphics.drawq(self.animation.image, self.animation:getCurrentQuad(), self.position.x, self.position.y, 0, self.scale, self.scale, 8, 8)
 
-    utils.debugDrawCircle(255, 0, 0, 255, self.position.x - camera.x, self.position.y - camera.y, self.circleRadius)end
+    utils.debugDrawCircle(255, 0, 0, 255, self.position.x, self.position.y, self.circleRadius)
+end

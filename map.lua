@@ -1,3 +1,4 @@
+require "constants"
 require "utils"
 require "noise"
 require "tile"
@@ -8,12 +9,10 @@ Map.__index = Map
 
 Map.TILE_SIZE = 16
 Map.DRAW_SIZE = 32
-Map.COLUMNS = 640 / Map.DRAW_SIZE
-Map.ROWS = 480 / Map.DRAW_SIZE
-Map.WATER = 0
-Map.SAND = 1
-Map.GRASS = 2
-Map.ROCK = 3
+Map.WATER = 1
+Map.SAND = 2
+Map.GRASS = 3
+Map.ROCK = 4
 Map.WATER_LIMIT = 0.3
 Map.SAND_LIMIT = 0.4
 Map.GRASS_LIMIT = 0.65
@@ -216,27 +215,30 @@ function Map:update(dt)
 end
 
 function Map:draw()
+    local columns = constants.SCREEN_WIDTH / Map.DRAW_SIZE
+    local rows = constants.SCREEN_HEIGHT / Map.DRAW_SIZE
+
     local startX = math.floor(camera.x / Map.DRAW_SIZE)
     local startY = math.floor(camera.y / Map.DRAW_SIZE)
-    local endX = startX + Map.COLUMNS + 1
-    local endY = startY + Map.ROWS + 1
+    local endX = startX + columns
+    local endY = startY + rows
 
     for x=startX, endX do
-        local posX = x * Map.DRAW_SIZE - camera.x
-        utils.debugDrawLine(255, 0, 0, 255, posX, startY * Map.DRAW_SIZE - camera.y, posX, endY * Map.DRAW_SIZE - camera.y)
+        local posX = x * Map.DRAW_SIZE
+        utils.debugDrawLine(255, 0, 0, 255, posX, startY * Map.DRAW_SIZE, posX, endY * Map.DRAW_SIZE)
 
         for y=startY, endY do
-            local posY = y * Map.DRAW_SIZE - camera.y
-            utils.debugDrawLine(255, 0, 0, 255, startX * Map.DRAW_SIZE - camera.x, posY, endX * Map.DRAW_SIZE - camera.x, posY)
+            local posY = y * Map.DRAW_SIZE
+            utils.debugDrawLine(255, 0, 0, 255, startX * Map.DRAW_SIZE, posY, endX * Map.DRAW_SIZE, posY)
 
             if x >= 0 and y >= 0 and x < self.width and y < self.height then
                 local currentTile = self.tiles[x + 1][y + 1]
 
                 love.graphics.setColor(255, 255, 255, 255)
-                love.graphics.drawq(self.tileset, self.quads[currentTile.type + 1][1], posX, posY, 0, Map.DRAW_SIZE / Map.TILE_SIZE)
+                love.graphics.drawq(self.tileset, self.quads[currentTile.type][1], posX, posY, 0, Map.DRAW_SIZE / Map.TILE_SIZE)
                 
                 if currentTile.transition > 0 then
-                    love.graphics.drawq(self.tileset, self.quads[currentTile.type + 1 + 1][currentTile.transition + 1], posX, posY, 0, Map.DRAW_SIZE / Map.TILE_SIZE)
+                    love.graphics.drawq(self.tileset, self.quads[currentTile.type + 1][currentTile.transition + 1], posX, posY, 0, Map.DRAW_SIZE / Map.TILE_SIZE)
                 end
 
                 if currentTile.decal ~= nil then

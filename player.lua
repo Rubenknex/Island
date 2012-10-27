@@ -134,7 +134,7 @@ end
 
 function Player:draw()
     love.graphics.setColor(255, 255, 255, 255)
-    love.graphics.drawq(self.animation.image, self.animation:getCurrentQuad(), self.pos.x - camera.x, self.pos.y - camera.y, 0, self.scale, self.scale, 8, 8)
+    love.graphics.drawq(self.animation.image, self.animation:getCurrentQuad(), self.pos.x, self.pos.y, 0, self.scale, self.scale, 8, 8)
     
-    utils.debugDrawCircle(255, 0, 0, 255, self.pos.x + self.circleOffset.x - camera.x, self.pos.y + self.circleOffset.y - camera.y, self.circleRadius)
+    utils.debugDrawCircle(255, 0, 0, 255, self.pos.x + self.circleOffset.x, self.pos.y + self.circleOffset.y, self.circleRadius)
 end

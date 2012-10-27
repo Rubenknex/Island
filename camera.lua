@@ -1,37 +1,46 @@
 require "utils"
 
-Camera = {}
-Camera.__index = Camera
+-- Credit goes to: http://nova-fusion.com/2011/04/19/cameras-in-love2d-part-1-the-basics/
 
-function Camera.create(x, y, width, height)
-    self = {}
-    setmetatable(self, Camera)
+camera = {
+    x = 0,
+    y = 0,
+    scaleX = 1,
+    scaleY = 1,
+    rotation = 0
+}
 
-    self.x, self.y = x, y
-    self.width, self.height = width, height
-    self:roundPosition()
-
-    return self
+function camera:set()
+    love.graphics.push()
+    love.graphics.rotate(-self.rotation)
+    love.graphics.scale(1 / self.scaleX, 1 / self.scaleY)
+    love.graphics.translate(-self.x, -self.y)
 end
 
-function Camera:setPosition(pos)
-    self.x, self.y = pos.x, pos.y
-    self:roundPosition()
+function camera:unset()
+    love.graphics.pop()
 end
 
-function Camera:interpolate(pos, var)
-    self.x = utils.lerp(self.x, pos.x, var)
-    self.y = utils.lerp(self.y, pos.y, var)
-    self:roundPosition()
+function camera:move(dx, dy)
+    self.x = self.x + dx
+    self.y = self.y + dy
 end
 
-function Camera:move(offset)
-    self.x = self.x + offset.x
-    self.y = self.y + offset.y
-    self:roundPosition()
+function camera:rotate(dr)
+    self.rotation = self.rotation + dr
 end
 
-function Camera:roundPosition()
-    self.x = math.floor(self.x + 0.5)
-    self.y = math.floor(self.y + 0.5)
+function camera:scale(sx, sy)
+    self.scaleX = self.scaleX * sx
+    self.scaleY = self.scaleY * sy
+end
+
+function camera:setPosition(x, y)
+    self.x = x
+    self.y = y
+end
+
+function camera:setScale(sx, sy)
+    self.scaleX = sx
+    self.scaleY = sy
 end
