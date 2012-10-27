@@ -5,16 +5,16 @@ function Rect.create(x, y, width, height)
     local self = {}
     setmetatable(self, Rect)
 
-    self.x, self.y = x, y
-    self.max_x, self.max_y = x + width, y + height
+    self.left, self.top = x, y
+    self.right, self.bottom = x + width, y + height
     self.width, self.height = width, height
 
     return self
 end
 
 function Rect:intersect(other)
-    if self.max_x < other.min_x or self.min_x > other.max_x or
-        self.max_y < other.min_y or self.min_y > other.max_y then
+    if self.right < other.left or self.left > other.right or
+        self.bottom < other.top or self.top > other.bottom then
         return false
     end
 
@@ -22,5 +22,5 @@ function Rect:intersect(other)
 end
 
 function Rect:contains(x, y)
-    return x >= self.x and x <= self.max_x and y >= self.y and y <= self.max_y
+    return x >= self.left and x <= self.right and y >= self.top and y <= self.bottom
 end
