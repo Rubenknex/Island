@@ -45,8 +45,6 @@ function Crab.create(x, y)
     self.animation:addSequence("left", 0, 32, 16, 16, 2)
     self.animation:addSequence("right", 0, 48, 16, 16, 2)
 
-    self.scale = 2
-
 	return self
 end
 
@@ -144,7 +142,7 @@ end
 function Crab:draw()
 	love.graphics.setColor(255, 255, 255, 255)
 
-    love.graphics.drawq(self.animation.image, self.animation:getCurrentQuad(), self.position.x, self.position.y, 0, self.scale, self.scale, 8, 8)
+    love.graphics.drawq(self.animation.image, self.animation:getCurrentQuad(), self.position.x, self.position.y, 0, 2, 2, 8, 8)
 
     utils.debugDrawCircle(255, 0, 0, 255, self.position.x, self.position.y, self.circleRadius)
 end

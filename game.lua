@@ -28,7 +28,7 @@ Game.__index = Game
 function Game.create()
     local self = {}
     setmetatable(self, Game)
-    
+
     map = Map.create(128, 128)
     player = Player.create(320, 240)
 
@@ -47,7 +47,7 @@ function Game:placeEntities()
     for i=1, 10 do
         local pos = Vec2.create(0, 0)
         while map:tileTypeAt(pos.x, pos.y) ~= Map.SAND do
-            pos = Vec2.create(math.random(map.width) * Map.DRAW_SIZE, math.random(map.height) * Map.DRAW_SIZE)
+            pos = Vec2.create(math.random(map.width) * Map.TILE_SIZE, math.random(map.height) * Map.TILE_SIZE)
         end
 
         table.insert(entities, Crab.create(pos.x, pos.y))
@@ -64,7 +64,7 @@ function Game:update(dt)
 
     self:updateUI(dt)
 
-    camera:setPosition(player.pos.x - constants.SCREEN_WIDTH / 2, player.pos.y - constants.SCREEN_HEIGHT / 2)
+    camera:setPosition(player.pos.x, player.pos.y)
 end
 
 function Game:draw()
@@ -85,6 +85,8 @@ function Game:draw()
 
     love.graphics.setColor(255, 255, 255)
     love.graphics.print("FPS: " .. love.timer.getFPS(), 0, 0)
+    love.graphics.print("Cam: ".. camera.x .. ", " .. camera.y, 0, 40)
+    love.graphics.print("Pos: " .. tostring(player.pos), 0, 20)
 end
 
 function Game:updateUI(dt)

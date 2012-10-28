@@ -1,4 +1,3 @@
-require "constants"
 require "utils"
 require "noise"
 require "tile"
@@ -215,13 +214,11 @@ function Map:update(dt)
 end
 
 function Map:draw()
-    local columns = constants.SCREEN_WIDTH / Map.DRAW_SIZE
-    local rows = constants.SCREEN_HEIGHT / Map.DRAW_SIZE
-
-    local startX = math.floor(camera.x / Map.DRAW_SIZE)
-    local startY = math.floor(camera.y / Map.DRAW_SIZE)
-    local endX = startX + columns
-    local endY = startY + rows
+    local left, top, right, bottom = camera:getBounds()
+    local startX = math.floor(left / Map.DRAW_SIZE)
+    local startY = math.floor(top / Map.DRAW_SIZE)
+    local endX = math.ceil(right / Map.DRAW_SIZE)
+    local endY = math.ceil(bottom / Map.DRAW_SIZE)
 
     for x=startX, endX do
         local posX = x * Map.DRAW_SIZE
@@ -235,14 +232,14 @@ function Map:draw()
                 local currentTile = self.tiles[x + 1][y + 1]
 
                 love.graphics.setColor(255, 255, 255, 255)
-                love.graphics.drawq(self.tileset, self.quads[currentTile.type][1], posX, posY, 0, Map.DRAW_SIZE / Map.TILE_SIZE)
+                love.graphics.drawq(self.tileset, self.quads[currentTile.type][1], posX, posY, 0, 2)
                 
                 if currentTile.transition > 0 then
-                    love.graphics.drawq(self.tileset, self.quads[currentTile.type + 1][currentTile.transition + 1], posX, posY, 0, Map.DRAW_SIZE / Map.TILE_SIZE)
+                    love.graphics.drawq(self.tileset, self.quads[currentTile.type + 1][currentTile.transition + 1], posX, posY, 0, 2)
                 end
 
                 if currentTile.decal ~= nil then
-                    love.graphics.drawq(self.decals, self.decalQuads[currentTile.decal], posX, posY, 0, Map.DRAW_SIZE / Map.TILE_SIZE)
+                    love.graphics.drawq(self.decals, self.decalQuads[currentTile.decal], posX, posY, 0, 2)
                 end
             end
         end

@@ -25,7 +25,7 @@ function Player.create(x, y)
     self.type = "player"
     self.pos = Vec2.create(0, 0)
     while not map:walkableAt(self.pos.x, self.pos.y) do
-        self.pos = Vec2.create(math.random(map.width) * Map.DRAW_SIZE, math.random(map.height) * Map.DRAW_SIZE)
+        self.pos = Vec2.create(math.random(map.width) * Map.TILE_SIZE, math.random(map.height) * Map.TILE_SIZE)
     end
     self.collidable = true
 
@@ -38,8 +38,6 @@ function Player.create(x, y)
     self.animation:addSequence("left", 32, 0, 16, 16, 1)
     self.animation:addSequence("right", 48, 0, 16, 16, 1)
     self.animation:playSequence("down", "paused", 1)
-
-    self.scale = 3
 
     self.normalSpeed = 150
     self.sprintSpeed = 250
@@ -89,7 +87,7 @@ function Player:handleCollision(dt)
     local circlePos = self.pos + self.circleOffset
     local left, top = circlePos.x - self.circleRadius, circlePos.y - self.circleRadius
     local right, bottom = circlePos.x + self.circleRadius, circlePos.y + self.circleRadius
-    local tSize = Map.DRAW_SIZE
+    local tSize = Map.TILE_SIZE * 2
     local tLeft, tTop = math.floor(left / tSize), math.floor(top / tSize)
     local tRight, tBottom = math.floor(right / tSize), math.floor(bottom / tSize)
     
@@ -134,7 +132,7 @@ end
 
 function Player:draw()
     love.graphics.setColor(255, 255, 255, 255)
-    love.graphics.drawq(self.animation.image, self.animation:getCurrentQuad(), self.pos.x, self.pos.y, 0, self.scale, self.scale, 8, 8)
+    love.graphics.drawq(self.animation.image, self.animation:getCurrentQuad(), self.pos.x, self.pos.y, 0, 3, 3, 8, 8)
     
     utils.debugDrawCircle(255, 0, 0, 255, self.pos.x + self.circleOffset.x, self.pos.y + self.circleOffset.y, self.circleRadius)
 end
