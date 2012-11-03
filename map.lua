@@ -23,7 +23,7 @@ function Map.create(width, height)
 
     self:generate(width, height)
 
-    self.tileset = love.graphics.newImage("data/terrain.png")
+    self.tileset = love.graphics.newImage("data/terrain_2.png")
     self.quads = {}
     for y=0, 3 do
         self.quads[y + 1] = {}
@@ -221,11 +221,11 @@ function Map:update(dt)
 end
 
 function Map:draw()
-    local left, top, right, bottom = camera:getBounds()
-    local startX = math.floor(left / Map.DRAW_SIZE)
-    local startY = math.floor(top / Map.DRAW_SIZE)
-    local endX = math.ceil(right / Map.DRAW_SIZE)
-    local endY = math.ceil(bottom / Map.DRAW_SIZE)
+    local bounds = camera:getBounds()
+    local startX = math.floor(bounds.left / Map.DRAW_SIZE)
+    local startY = math.floor(bounds.top / Map.DRAW_SIZE)
+    local endX = math.ceil(bounds.right / Map.DRAW_SIZE)
+    local endY = math.ceil(bounds.bottom / Map.DRAW_SIZE)
 
     for x=startX, endX do
         local posX = x * Map.DRAW_SIZE

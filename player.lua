@@ -97,5 +97,5 @@ function Player:draw()
     love.graphics.setColor(255, 255, 255, 255)
     love.graphics.drawq(self.animation.image, self.animation:getCurrentQuad(), self.position.x, self.position.y, 0, 3, 3, 8, 8)
     
-    --utils.debugDrawCircle(255, 0, 0, 255, self:getBoundingCircle())
+    utils.debugDrawCircle(255, 0, 0, 255, self:getBoundingCircle())
 end
