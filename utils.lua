@@ -24,25 +24,33 @@ function utils.lerp(a, b, x)
     return a + (b - a) * x
 end
 
-function utils.collideRectCircle(rect, pos, radius)
+function utils.collideRectCircle(rect, circle)
+    local closestX = utils.clamp(circle.x, rect.left, rect.right)
+    local closestY = utils.clamp(circle.y, rect.top, rect.bottom)
+
+    local distX = circle.x - closestX
+    local distY = circle.y - closestY
+    local distLength = math.sqrt(distX ^ 2 + distY ^ 2)
+
+    if distLength < circle.radius and distLength ~= 0 then
+        local resolveX = (distX / distLength) * (circle.radius - distLength)
+        local resolveY = (distY / distLength) * (circle.radius - distLength)
+
+        return true, resolveX, resolveY
+    else
+        return false, 0, 0
+    end
+end
+
+function utils.collideRectCircle2(rect, pos, radius)
     local closestX = utils.clamp(pos.x, rect.left, rect.right)
     local closestY = utils.clamp(pos.y, rect.top, rect.bottom)
 
-    local diff = Vec2.create(pos.x - closestX, pos.y - closestY)
+    local distX = pos.x - closestX
+    local distY = pos.y - closestY
 
-    if diff:lengthSquared() > radius ^ 2 then
-        return false, 0, 0
-    end
-
-    local length = diff:length()
-
-    if length == 0 then
-        return false, 0, 0
-    end
-
-    local normal = diff:normalized()
-
-    return true, normal, radius - length
+    local distSquared = distX ^ 2 + distY ^ 2
+    
 end
 
 function utils.smoothenHeightMap(data, passes)
@@ -122,6 +130,13 @@ function utils.arrayToImage(array, name)
     imgData:encode(name .. ".png")
 end
 
+function utils.debugPrint(r, g, b, a, text, x, y)
+    if debug then
+        love.graphics.setColor(r, g, b, a)
+        love.graphics.print(text, x, y)
+    end
+end
+
 function utils.debugDrawLine(r, g, b, a, x1, y1, x2, y2)
     if debug then
         love.graphics.setColor(r, g, b, a)
@@ -130,10 +145,10 @@ function utils.debugDrawLine(r, g, b, a, x1, y1, x2, y2)
     end
 end
 
-function utils.debugDrawCircle(r, g, b, a, x, y, radius)
+function utils.debugDrawCircle(r, g, b, a, circle)
     if debug then
         love.graphics.setColor(r, g, b, a)
         love.graphics.setLine(1, "rough")
-        love.graphics.circle("line", x, y, radius)
+        love.graphics.circle("line", circle.x, circle.y, circle.radius)
     end
 end
