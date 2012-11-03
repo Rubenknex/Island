@@ -1,21 +1,39 @@
 require "utils"
 require "noise"
-require "tile"
 require "vec2"
+
+WATER = 1
+SAND = 2
+GRASS = 3
+ROCK = 4
+
+Tile = {}
+Tile.__index = Tile
+
+function Tile.create(type, value, transition)
+    -- type: The type of the tile (water, grass etc).
+    -- value: The value from the noise map, the type is derived from this.
+    -- transition: Stores the combination of neighbouring tiles, used as offset in the tileset.
+    local self = {}
+    setmetatable(self, Tile)
+
+    self.type = type
+    self.value = value
+    self.transition = transition
+    self.decal = nil
+
+    return self
+end
+
+TILE_SIZE = 16
+TILE_DRAW_SIZE = 32
+WATER_LIMIT = 0.3
+SAND_LIMIT = 0.4
+GRASS_LIMIT = 0.65
+ROCK_LIMIT = 1.0
 
 Map = {}
 Map.__index = Map
-
-Map.TILE_SIZE = 16
-Map.DRAW_SIZE = 32
-Map.WATER = 1
-Map.SAND = 2
-Map.GRASS = 3
-Map.ROCK = 4
-Map.WATER_LIMIT = 0.3
-Map.SAND_LIMIT = 0.4
-Map.GRASS_LIMIT = 0.65
-Map.ROCK_LIMIT = 1.0
 
 function Map.create(width, height)
     local self = {}
@@ -35,10 +53,47 @@ function Map.create(width, height)
     self.decals = love.graphics.newImage("data/decals.png")
     self.decalQuads = {}
     for x=0, 2 do
-        self.decalQuads[x + 1] = love.graphics.newQuad(x * Map.TILE_SIZE, 0, Map.TILE_SIZE, Map.TILE_SIZE, self.decals:getWidth(), self.decals:getHeight())
+        self.decalQuads[x + 1] = love.graphics.newQuad(x * TILE_SIZE, 0, TILE_SIZE, TILE_SIZE, self.decals:getWidth(), self.decals:getHeight())
     end
 
     return self
+end
+
+function Map:update(dt)
+    
+end
+
+function Map:draw()
+    local bounds = camera:getBounds()
+    local startX = math.floor(bounds.left / TILE_DRAW_SIZE)
+    local startY = math.floor(bounds.top / TILE_DRAW_SIZE)
+    local endX = math.ceil(bounds.right / TILE_DRAW_SIZE)
+    local endY = math.ceil(bounds.bottom / TILE_DRAW_SIZE)
+
+    for x=startX, endX do
+        local posX = x * TILE_DRAW_SIZE
+        utils.debugDrawLine(255, 0, 0, 255, posX, startY * TILE_DRAW_SIZE, posX, endY * TILE_DRAW_SIZE)
+
+        for y=startY, endY do
+            local posY = y * TILE_DRAW_SIZE
+            utils.debugDrawLine(255, 0, 0, 255, startX * TILE_DRAW_SIZE, posY, endX * TILE_DRAW_SIZE, posY)
+
+            if x >= 0 and y >= 0 and x < self.width and y < self.height then
+                local currentTile = self.tiles[x + 1][y + 1]
+
+                love.graphics.setColor(255, 255, 255, 255)
+                love.graphics.drawq(self.tileset, self.quads[currentTile.type][1], posX, posY, 0, 2)
+                
+                if currentTile.transition > 0 then
+                    love.graphics.drawq(self.tileset, self.quads[currentTile.type + 1][currentTile.transition + 1], posX, posY, 0, 2)
+                end
+
+                if currentTile.decal ~= nil then
+                    love.graphics.drawq(self.decals, self.decalQuads[currentTile.decal], posX, posY, 0, 2)
+                end
+            end
+        end
+    end
 end
 
 function Map:generate(width, height)
@@ -65,13 +120,13 @@ function Map:generate(width, height)
         types[x] = {}
 
         for y=1, height do
-            local type = Map.WATER
+            local type = WATER
             local value = data[x][y]
 
-            if value < Map.WATER_LIMIT then type = Map.WATER
-            elseif value < Map.SAND_LIMIT then type = Map.SAND
-            elseif value < Map.GRASS_LIMIT then type = Map.GRASS
-            elseif value < Map.ROCK_LIMIT then type = Map.ROCK
+            if value < WATER_LIMIT then type = WATER
+            elseif value < SAND_LIMIT then type = SAND
+            elseif value < GRASS_LIMIT then type = GRASS
+            elseif value < ROCK_LIMIT then type = ROCK
             end
 
             types[x][y] = type
@@ -161,10 +216,27 @@ function Map:generateIslandMask(width, height, maskDistance)
     return mask
 end
 
+function Map:generateMinimap()
+    local minimapData = love.image.newImageData(self.width, self.height)
+    for x=1, self.width do
+        for y=1, self.height do
+            local type = self.tiles[x][y].type
+
+            if type == WATER then minimapData:setPixel(x - 1, y - 1, 31, 34, 222, 255)
+            elseif type == SAND then minimapData:setPixel(x - 1, y - 1, 252, 227, 58, 255)
+            elseif type == GRASS then minimapData:setPixel(x - 1, y - 1, 0, 128, 30, 255)
+            elseif type == ROCK then minimapData:setPixel(x - 1, y - 1, 82, 82, 82, 255)
+            end
+        end
+    end
+
+    self.minimap = love.graphics.newImage(minimapData)
+end
+
 function Map:placeDecals()
     for x=1, self.width do
         for y=1, self.height do
-            if self.tiles[x][y].type == Map.SAND and math.random(100) < 3 then
+            if self.tiles[x][y].type == SAND and math.random(100) < 3 then
                 self.tiles[x][y].decal = math.random(1, 3)
             end
         end
@@ -175,32 +247,15 @@ function Map:placePlants()
 
 end
 
-function Map:generateMinimap()
-    local minimapData = love.image.newImageData(self.width, self.height)
-    for x=1, self.width do
-        for y=1, self.height do
-            local type = self.tiles[x][y].type
-
-            if type == Map.WATER then minimapData:setPixel(x - 1, y - 1, 31, 34, 222, 255)
-            elseif type == Map.SAND then minimapData:setPixel(x - 1, y - 1, 252, 227, 58, 255)
-            elseif type == Map.GRASS then minimapData:setPixel(x - 1, y - 1, 0, 128, 30, 255)
-            elseif type == Map.ROCK then minimapData:setPixel(x - 1, y - 1, 82, 82, 82, 255)
-            end
-        end
-    end
-
-    self.minimap = love.graphics.newImage(minimapData)
-end
-
 function Map:walkableAt(x, y)
     local type = self:tileTypeAt(x, y)
 
-    return type ~= nil and type ~= Map.WATER
+    return type ~= nil and type ~= WATER
 end
 
 function Map:tileTypeAt(x, y)
-    tileX = math.floor(x / Map.DRAW_SIZE)
-    tileY = math.floor(y / Map.DRAW_SIZE)
+    tileX = math.floor(x / TILE_DRAW_SIZE)
+    tileY = math.floor(y / TILE_DRAW_SIZE)
 
     if tileX >= 0 and tileX < self.width and tileY >= 0 and tileY < self.height then
         return self.tiles[tileX + 1][tileY + 1].type
@@ -210,45 +265,8 @@ function Map:tileTypeAt(x, y)
 end
 
 function Map:rectAt(x, y)
-    tileX = math.floor(x / Map.DRAW_SIZE)
-    tileY = math.floor(y / Map.DRAW_SIZE)
+    tileX = math.floor(x / TILE_DRAW_SIZE)
+    tileY = math.floor(y / TILE_DRAW_SIZE)
 
-    return Rect.create(tileX * Map.DRAW_SIZE, tileY * Map.DRAW_SIZE, Map.DRAW_SIZE, Map.DRAW_SIZE)
-end
-
-function Map:update(dt)
-    
-end
-
-function Map:draw()
-    local bounds = camera:getBounds()
-    local startX = math.floor(bounds.left / Map.DRAW_SIZE)
-    local startY = math.floor(bounds.top / Map.DRAW_SIZE)
-    local endX = math.ceil(bounds.right / Map.DRAW_SIZE)
-    local endY = math.ceil(bounds.bottom / Map.DRAW_SIZE)
-
-    for x=startX, endX do
-        local posX = x * Map.DRAW_SIZE
-        utils.debugDrawLine(255, 0, 0, 255, posX, startY * Map.DRAW_SIZE, posX, endY * Map.DRAW_SIZE)
-
-        for y=startY, endY do
-            local posY = y * Map.DRAW_SIZE
-            utils.debugDrawLine(255, 0, 0, 255, startX * Map.DRAW_SIZE, posY, endX * Map.DRAW_SIZE, posY)
-
-            if x >= 0 and y >= 0 and x < self.width and y < self.height then
-                local currentTile = self.tiles[x + 1][y + 1]
-
-                love.graphics.setColor(255, 255, 255, 255)
-                love.graphics.drawq(self.tileset, self.quads[currentTile.type][1], posX, posY, 0, 2)
-                
-                if currentTile.transition > 0 then
-                    love.graphics.drawq(self.tileset, self.quads[currentTile.type + 1][currentTile.transition + 1], posX, posY, 0, 2)
-                end
-
-                if currentTile.decal ~= nil then
-                    love.graphics.drawq(self.decals, self.decalQuads[currentTile.decal], posX, posY, 0, 2)
-                end
-            end
-        end
-    end
+    return Rect.create(tileX * TILE_DRAW_SIZE, tileY * TILE_DRAW_SIZE, TILE_DRAW_SIZE, TILE_DRAW_SIZE)
 end

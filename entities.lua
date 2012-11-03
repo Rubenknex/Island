@@ -1,20 +1,6 @@
 require "animation"
 require "map"
 
---[[
-Entity properties:
-- type (string)
-- position (Vec2)
-- collidable (boolean)
-
-Entity methods:
-- update(dt)
-- render()
-- getBoundingCircle() (x, y, radius)
-- collisionWith()
-
-]]--
-
 Crab = {}
 Crab.__index = Crab
 
@@ -46,29 +32,6 @@ function Crab.create(x, y)
     self.animation:addSequence("right", 0, 48, 16, 16, 2)
 
 	return self
-end
-
-function Crab:chooseTarget()
-    local degrees = math.random(0, 359)
-	local angle = math.rad(degrees)
-
-    -- Set the correct quad facing the target
-    if degrees >= 315 or degrees <= 45 then self.animation:playSequence("up", "loop", 0.2)
-    elseif degrees >= 45 and degrees <= 135 then self.animation:playSequence("right", "loop", 0.2)
-    elseif degrees >= 135 and degrees <= 225 then self.animation:playSequence("down", "loop", 0.2)
-    elseif degrees >= 225 and degrees <= 315 then self.animation:playSequence("left", "loop", 0.2) end
-
-	self.direction = Vec2.create(math.cos(angle), math.sin(angle))
-	local distance = math.random(self.minRange, self.maxRange)
-	self.target = self.position + self.direction * distance
-	self.walkTime = distance / self.speed
-end
-
-function Crab:getBoundingCircle()
-    self.boundingCircle.x = self.position.x
-    self.boundingCircle.y = self.position.y
-
-    return self.boundingCircle
 end
 
 function Crab:update(dt)
@@ -104,4 +67,27 @@ function Crab:draw()
     love.graphics.drawq(self.animation.image, self.animation:getCurrentQuad(), self.position.x, self.position.y, 0, 2, 2, 8, 8)
 
     utils.debugDrawCircle(255, 0, 0, 255, self:getBoundingCircle())
+end
+
+function Crab:chooseTarget()
+    local degrees = math.random(0, 359)
+	local angle = math.rad(degrees)
+
+    -- Set the correct quad facing the target
+    if degrees >= 315 or degrees <= 45 then self.animation:playSequence("up", "loop", 0.2)
+    elseif degrees >= 45 and degrees <= 135 then self.animation:playSequence("right", "loop", 0.2)
+    elseif degrees >= 135 and degrees <= 225 then self.animation:playSequence("down", "loop", 0.2)
+    elseif degrees >= 225 and degrees <= 315 then self.animation:playSequence("left", "loop", 0.2) end
+
+	self.direction = Vec2.create(math.cos(angle), math.sin(angle))
+	local distance = math.random(self.minRange, self.maxRange)
+	self.target = self.position + self.direction * distance
+	self.walkTime = distance / self.speed
+end
+
+function Crab:getBoundingCircle()
+    self.boundingCircle.x = self.position.x
+    self.boundingCircle.y = self.position.y
+
+    return self.boundingCircle
 end

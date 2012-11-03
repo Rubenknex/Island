@@ -45,53 +45,6 @@ function Game.create()
     return self
 end
 
-function Game:placeEntities()
-    for i=1, 10 do
-        local pos = Vec2.create(0, 0)
-        while map:tileTypeAt(pos.x, pos.y) ~= Map.SAND do
-            pos = Vec2.create(math.random(map.width) * Map.TILE_SIZE, math.random(map.height) * Map.TILE_SIZE)
-        end
-
-        table.insert(entities, Crab.create(pos.x, pos.y))
-    end
-end
-
-function Game:resolveCollision(x, y, entity)
-    local result, resolveX, resolveY = false, 0, 0
-    if not map:walkableAt(x, y) then
-        result, resolveX, resolveY = utils.collideRectCircle(map:rectAt(x, y), entity:getBoundingCircle())
-
-        if result then
-            entity.position.x = entity.position.x + resolveX
-            entity.position.y = entity.position.y + resolveY
-        end
-    end
-end
-
-function Game:handleCollisions()
-    for k, v in pairs(entities) do
-        if v.collidable then
-            local circle = v:getBoundingCircle()
-            leftX = circle.x - circle.radius
-            middleX = circle.x
-            rightX = circle.x + circle.radius
-            topY = circle.y - circle.radius
-            middleY = circle.y
-            bottomY = circle.y + circle.radius
-
-            self:resolveCollision(leftX, middleY, v)
-            self:resolveCollision(rightX, middleY, v)
-            self:resolveCollision(middleX, topY, v)
-            self:resolveCollision(middleX, bottomY, v)
-
-            self:resolveCollision(leftX, topY, v)
-            self:resolveCollision(leftX, bottomY, v)
-            self:resolveCollision(rightX, topY, v)
-            self:resolveCollision(rightX, bottomY, v)
-        end
-    end
-end
-
 function Game:update(dt)
     map:update(dt)
 
@@ -123,6 +76,56 @@ function Game:draw()
 
     utils.debugPrint(255, 255, 255, 255, "FPS: " .. love.timer.getFPS(), 0, 0)
     utils.debugPrint(255, 255, 255, 255, "Player: " .. tostring(player.pos), 0, 15)
+end
+
+function Game:placeEntities()
+    for i=1, 10 do
+        local pos = Vec2.create(0, 0)
+        while map:tileTypeAt(pos.x, pos.y) ~= Map.SAND do
+            pos = Vec2.create(math.random(map.width) * Map.TILE_SIZE, math.random(map.height) * Map.TILE_SIZE)
+        end
+
+        table.insert(entities, Crab.create(pos.x, pos.y))
+    end
+end
+
+function Game:resolveCollision(x, y, entity)
+    local result, resolveX, resolveY = false, 0, 0
+    if not map:walkableAt(x, y) then
+        result, resolveX, resolveY = utils.collideRectCircle(map:rectAt(x, y), entity:getBoundingCircle())
+
+        if result then
+            entity.collided = true
+            entity.position.x = entity.position.x + resolveX
+            entity.position.y = entity.position.y + resolveY
+        end
+    end
+end
+
+function Game:handleCollisions()
+    for k, v in pairs(entities) do
+        if v.collidable then
+            v.collided = false
+
+            local circle = v:getBoundingCircle()
+            leftX = circle.x - circle.radius
+            middleX = circle.x
+            rightX = circle.x + circle.radius
+            topY = circle.y - circle.radius
+            middleY = circle.y
+            bottomY = circle.y + circle.radius
+
+            self:resolveCollision(leftX, middleY, v)
+            self:resolveCollision(rightX, middleY, v)
+            self:resolveCollision(middleX, topY, v)
+            self:resolveCollision(middleX, bottomY, v)
+
+            self:resolveCollision(leftX, topY, v)
+            self:resolveCollision(leftX, bottomY, v)
+            self:resolveCollision(rightX, topY, v)
+            self:resolveCollision(rightX, bottomY, v)
+        end
+    end
 end
 
 function Game:updateUI(dt)
