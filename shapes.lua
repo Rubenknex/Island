@@ -24,3 +24,20 @@ end
 function Rect:contains(x, y)
     return x >= self.left and x <= self.right and y >= self.top and y <= self.bottom
 end
+
+Circle = {}
+Circle.__index = Circle
+
+function Circle.create(x, y, radius)
+    local self = {}
+    setmetatable(self, Circle)
+
+    self.x, self.y = x, y
+    self.radius = radius
+
+    return self
+end
+
+function Circle:intersect(other)
+
+end
