@@ -2,7 +2,8 @@ require "camera"
 require "entities"
 require "map"
 require "player"
-require "rect"
+require "shapes"
+require "utils"
 require "vec2"
 
 --[[
@@ -30,8 +31,10 @@ function Game.create()
     setmetatable(self, Game)
 
     map = Map.create(128, 128)
-    player = Player.create(320, 240)
+    player = Player.create()
 
+    entities = {}
+    table.insert(entities, player)
     self:placeEntities()
 
     self.mapButtonRect = Rect.create(640 - 35, 480 - 35, 30, 30)
@@ -43,7 +46,6 @@ function Game.create()
 end
 
 function Game:placeEntities()
-    entities = {}
     for i=1, 10 do
         local pos = Vec2.create(0, 0)
         while map:tileTypeAt(pos.x, pos.y) ~= Map.SAND do
@@ -54,17 +56,54 @@ function Game:placeEntities()
     end
 end
 
+function Game:resolveCollision(x, y, entity)
+    local result, resolveX, resolveY = false, 0, 0
+    if not map:walkableAt(x, y) then
+        result, resolveX, resolveY = utils.collideRectCircle(map:rectAt(x, y), entity:getBoundingCircle())
+
+        if result then
+            entity.position.x = entity.position.x + resolveX
+            entity.position.y = entity.position.y + resolveY
+        end
+    end
+end
+
+function Game:handleCollisions()
+    for k, v in pairs(entities) do
+        if v.collidable then
+            local circle = v:getBoundingCircle()
+            leftX = circle.x - circle.radius
+            middleX = circle.x
+            rightX = circle.x + circle.radius
+            topY = circle.y - circle.radius
+            middleY = circle.y
+            bottomY = circle.y + circle.radius
+
+            self:resolveCollision(leftX, middleY, v)
+            self:resolveCollision(rightX, middleY, v)
+            self:resolveCollision(middleX, topY, v)
+            self:resolveCollision(middleX, bottomY, v)
+
+            self:resolveCollision(leftX, topY, v)
+            self:resolveCollision(leftX, bottomY, v)
+            self:resolveCollision(rightX, topY, v)
+            self:resolveCollision(rightX, bottomY, v)
+        end
+    end
+end
+
 function Game:update(dt)
     map:update(dt)
-    player:update(dt)
 
     for k, v in pairs(entities) do
         v:update(dt)
     end
 
+    self:handleCollisions()
+
     self:updateUI(dt)
 
-    camera:setPosition(player.pos.x, player.pos.y)
+    camera:lerp(player.position.x, player.position.y, 0.05)
 end
 
 function Game:draw()
@@ -73,7 +112,6 @@ function Game:draw()
     camera:set()
 
     map:draw()
-    player:draw()
 
     for k, v in pairs(entities) do
         v:draw()
@@ -83,10 +121,8 @@ function Game:draw()
 
     self:drawUI()
 
-    love.graphics.setColor(255, 255, 255)
-    love.graphics.print("FPS: " .. love.timer.getFPS(), 0, 0)
-    love.graphics.print("Cam: ".. camera.x .. ", " .. camera.y, 0, 40)
-    love.graphics.print("Pos: " .. tostring(player.pos), 0, 20)
+    utils.debugPrint(255, 255, 255, 255, "FPS: " .. love.timer.getFPS(), 0, 0)
+    utils.debugPrint(255, 255, 255, 255, "Player: " .. tostring(player.pos), 0, 15)
 end
 
 function Game:updateUI(dt)

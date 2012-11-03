@@ -1,6 +1,6 @@
 require "animation"
 require "map"
-require "rect"
+require "shapes"
 require "utils"
 
 Item = {}
@@ -18,19 +18,18 @@ end
 Player = {}
 Player.__index = Player
 
-function Player.create(x, y)
+function Player.create()
     local self = {}
     setmetatable(self, Player)
 
     self.type = "player"
-    self.pos = Vec2.create(0, 0)
-    while not map:walkableAt(self.pos.x, self.pos.y) do
-        self.pos = Vec2.create(math.random(map.width) * Map.TILE_SIZE, math.random(map.height) * Map.TILE_SIZE)
+    self.position = Vec2.create(0, 0)
+    while not map:walkableAt(self.position.x, self.position.y) do
+        self.position = Vec2.create(math.random(map.width) * Map.TILE_SIZE, math.random(map.height) * Map.TILE_SIZE)
     end
     self.collidable = true
 
-    self.circleOffset = Vec2.create(0, 18)
-    self.circleRadius = 6
+    self.boundingCircle = Circle.create(self.position.x, self.position.y + 18, 6)
 
     self.animation = Animation.create(love.graphics.newImage("data/man.png"))
     self.animation:addSequence("down", 0, 0, 16, 16, 1)
@@ -77,62 +76,26 @@ function Player:handleInput(dt)
 
     if self.dir:length() > 0 then
         local speed = love.keyboard.isDown("lshift") and self.sprintSpeed or self.normalSpeed
-        self.pos = self.pos + self.dir:normalized() * speed * dt
+        self.position = self.position + self.dir:normalized() * speed * dt
     else
         self.animation:pauseSequence(1)
     end
 end
 
-function Player:handleCollision(dt)
-    local circlePos = self.pos + self.circleOffset
-    local left, top = circlePos.x - self.circleRadius, circlePos.y - self.circleRadius
-    local right, bottom = circlePos.x + self.circleRadius, circlePos.y + self.circleRadius
-    local tSize = Map.TILE_SIZE * 2
-    local tLeft, tTop = math.floor(left / tSize), math.floor(top / tSize)
-    local tRight, tBottom = math.floor(right / tSize), math.floor(bottom / tSize)
-    
-    local result, normal, length = false, 0, 0
-    if not map:walkableAt(left, top) then
-        result, normal, length = utils.collideRectCircle(Rect.create(tLeft * tSize, tTop * tSize, tSize, tSize), circlePos, self.circleRadius)
-        if result then
-            self.pos = self.pos + normal * length
-        end
-    end
-
-    if not map:walkableAt(right, top) then
-        result, normal, length = utils.collideRectCircle(Rect.create(tRight * tSize, tTop * tSize, tSize, tSize), circlePos, self.circleRadius)
-        if result then
-            self.pos = self.pos + normal * length
-        end
-    end
-
-    if not map:walkableAt(right, bottom) then
-        result, normal, length = utils.collideRectCircle(Rect.create(tRight * tSize, tBottom * tSize, tSize, tSize), circlePos, self.circleRadius)
-        if result then
-            self.pos = self.pos + normal * length
-        end
-    end
-
-    if not map:walkableAt(left, bottom) then
-        result, normal, length = utils.collideRectCircle(Rect.create(tLeft * tSize, tBottom * tSize, tSize, tSize), circlePos, self.circleRadius)
-        if result then
-            self.pos = self.pos + normal * length
-        end
-    end
-end
-
 function Player:getBoundingCircle()
-    return self.pos.x, self.pos.y, self.circleRadius
+    self.boundingCircle.x = self.position.x
+    self.boundingCircle.y = self.position.y  + 18
+
+    return self.boundingCircle
 end
 
 function Player:update(dt)
     self:handleInput(dt)
-    self:handleCollision(dt)
 end
 
 function Player:draw()
     love.graphics.setColor(255, 255, 255, 255)
-    love.graphics.drawq(self.animation.image, self.animation:getCurrentQuad(), self.pos.x, self.pos.y, 0, 3, 3, 8, 8)
+    love.graphics.drawq(self.animation.image, self.animation:getCurrentQuad(), self.position.x, self.position.y, 0, 3, 3, 8, 8)
     
-    utils.debugDrawCircle(255, 0, 0, 255, self.pos.x + self.circleOffset.x, self.pos.y + self.circleOffset.y, self.circleRadius)
+    --utils.debugDrawCircle(255, 0, 0, 255, self:getBoundingCircle())
 end

@@ -26,7 +26,7 @@ function Crab.create(x, y)
 	self.position = Vec2.create(x, y)
     self.collidable = true
 
-    self.circleRadius = 6
+    self.boundingCircle = Circle.create(x, y, 6)
 
 	self.speed = 50
 	self.direction = Vec2.create()
@@ -48,48 +48,6 @@ function Crab.create(x, y)
 	return self
 end
 
-function Crab:handleCollision(dt)
-    local circlePos = self.position
-    local left, top = circlePos.x - self.circleRadius, circlePos.y - self.circleRadius
-    local right, bottom = circlePos.x + self.circleRadius, circlePos.y + self.circleRadius
-    local tSize = Map.DRAW_SIZE
-    local tLeft, tTop = math.floor(left / tSize), math.floor(top / tSize)
-    local tRight, tBottom = math.floor(right / tSize), math.floor(bottom / tSize)
-    
-    local result, normal, length = false, 0, 0
-    if not map:walkableAt(left, top) then
-        result, normal, length = utils.collideRectCircle(Rect.create(tLeft * tSize, tTop * tSize, tSize, tSize), circlePos, self.circleRadius)
-        if result then
-        	self.collided = true
-            self.position = self.position + normal * length
-        end
-    end
-
-    if not map:walkableAt(right, top) then
-        result, normal, length = utils.collideRectCircle(Rect.create(tRight * tSize, tTop * tSize, tSize, tSize), circlePos, self.circleRadius)
-        if result then
-        	self.collided = true
-            self.position = self.position + normal * length
-        end
-    end
-
-    if not map:walkableAt(right, bottom) then
-        result, normal, length = utils.collideRectCircle(Rect.create(tRight * tSize, tBottom * tSize, tSize, tSize), circlePos, self.circleRadius)
-        if result then
-        	self.collided = true
-            self.position = self.position + normal * length
-        end
-    end
-
-    if not map:walkableAt(left, bottom) then
-        result, normal, length = utils.collideRectCircle(Rect.create(tLeft * tSize, tBottom * tSize, tSize, tSize), circlePos, self.circleRadius)
-        if result then
-        	self.collided = true
-            self.position = self.position + normal * length
-        end
-    end
-end
-
 function Crab:chooseTarget()
     local degrees = math.random(0, 359)
 	local angle = math.rad(degrees)
@@ -107,7 +65,10 @@ function Crab:chooseTarget()
 end
 
 function Crab:getBoundingCircle()
-    return self.position.x, self.position.y, self.circleRadius
+    self.boundingCircle.x = self.position.x
+    self.boundingCircle.y = self.position.y
+
+    return self.boundingCircle
 end
 
 function Crab:update(dt)
@@ -134,8 +95,6 @@ function Crab:update(dt)
 		end
 	end
 
-	self:handleCollision()
-
     self.animation:update(dt)
 end
 
@@ -144,5 +103,5 @@ function Crab:draw()
 
     love.graphics.drawq(self.animation.image, self.animation:getCurrentQuad(), self.position.x, self.position.y, 0, 2, 2, 8, 8)
 
-    utils.debugDrawCircle(255, 0, 0, 255, self.position.x, self.position.y, self.circleRadius)
+    utils.debugDrawCircle(255, 0, 0, 255, self:getBoundingCircle())
 end
