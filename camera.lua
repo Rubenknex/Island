@@ -1,3 +1,4 @@
+require "shapes"
 require "utils"
 
 -- Credit goes to: http://nova-fusion.com/2011/04/19/cameras-in-love2d-part-1-the-basics/
@@ -13,9 +14,11 @@ camera = {
 
 function camera:set()
     love.graphics.push()
+    
+    love.graphics.translate(self.width / 2, self.height / 2)
     love.graphics.rotate(self.rotation)
     love.graphics.scale(self.scale)
-    love.graphics.translate(-self.x + self.width / 2, -self.y + self.height / 2)
+    love.graphics.translate(-self.x, -self.y)
 end
 
 function camera:unset()
@@ -27,9 +30,9 @@ function camera:move(dx, dy)
     self.y = self.y + dy
 end
 
-function camera:lerp(x, y, x)
-    self.x = self.x + (x - self.x) * x
-    self.y = self.y + (y - self.y) * x
+function camera:lerp(x, y, a)
+    self.x = self.x + (x - self.x) * a
+    self.y = self.y + (y - self.y) * a
 end
 
 function camera:rotate(dr)
@@ -45,9 +48,10 @@ function camera:setScale(scale)
     self.scale = scale
 end
 
-function camera:getBounds()
-    local halfWidth = self.width / 2
-    local halfHeight = self.height / 2
+function camera:setRotation(rotation)
+    self.rotation = rotation
+end
 
-    return self.x - halfWidth, self.y - halfHeight, self.x + halfWidth, self.y + halfHeight
+function camera:getBounds()
+    return Rect.create(self.x - self.width / 2, self.y - self.height / 2, self.width, self.height)
 end
