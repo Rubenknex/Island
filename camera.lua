@@ -27,6 +27,11 @@ function camera:move(dx, dy)
     self.y = self.y + dy
 end
 
+function camera:lerp(x, y, x)
+    self.x = self.x + (x - self.x) * x
+    self.y = self.y + (y - self.y) * x
+end
+
 function camera:rotate(dr)
     self.rotation = self.rotation + dr
 end
