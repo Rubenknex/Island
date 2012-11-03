@@ -209,6 +209,13 @@ function Map:tileTypeAt(x, y)
     end
 end
 
+function Map:rectAt(x, y)
+    tileX = math.floor(x / Map.DRAW_SIZE)
+    tileY = math.floor(y / Map.DRAW_SIZE)
+
+    return Rect.create(tileX * Map.DRAW_SIZE, tileY * Map.DRAW_SIZE, Map.DRAW_SIZE, Map.DRAW_SIZE)
+end
+
 function Map:update(dt)
     
 end
