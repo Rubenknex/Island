@@ -25,7 +25,7 @@ function Player.create()
     self.type = "player"
     self.position = Vec2.create(0, 0)
     while not map:walkableAt(self.position.x, self.position.y) do
-        self.position = Vec2.create(math.random(map.width) * TILE_SIZE, math.random(map.height) * TILE_SIZE)
+        self.position = Vec2.create((math.random(map.width) + 0.5) * TILE_DRAW_SIZE, (math.random(map.height) + 0.5) * TILE_DRAW_SIZE)
     end
     self.collidable = true
 

@@ -30,6 +30,7 @@ function Game.create()
     local self = {}
     setmetatable(self, Game)
 
+    camera = Camera.create()
     map = Map.create(128, 128)
     player = Player.create()
 
@@ -62,30 +63,28 @@ end
 function Game:draw()
     camera.x = math.floor(camera.x + 0.5)
     camera.y = math.floor(camera.y + 0.5)
+
     camera:set()
-
     map:draw()
-
     for k, v in pairs(entities) do
         v:draw()
     end
-
     camera:unset()
 
     self:drawUI()
 
     utils.debugPrint(255, 255, 255, 255, "FPS: " .. love.timer.getFPS(), 0, 0)
-    utils.debugPrint(255, 255, 255, 255, "Player: " .. tostring(player.pos), 0, 15)
+    utils.debugPrint(255, 255, 255, 255, "Player: " .. tostring(player.position), 0, 15)
 end
 
 function Game:placeEntities()
     for i=1, 10 do
-        local pos = Vec2.create(0, 0)
-        while map:tileTypeAt(pos.x, pos.y) ~= Map.SAND do
-            pos = Vec2.create(math.random(map.width) * Map.TILE_SIZE, math.random(map.height) * Map.TILE_SIZE)
+        local position = Vec2.create(0, 0)
+        while map:tileTypeAt(position.x, position.y) ~= SAND do
+            position = Vec2.create((math.random(map.width) + 0.5) * TILE_DRAW_SIZE, (math.random(map.height) + 0.5) * TILE_DRAW_SIZE)
         end
 
-        table.insert(entities, Crab.create(pos.x, pos.y))
+        table.insert(entities, Crab.create(position.x, position.y))
     end
 end
 
@@ -95,6 +94,7 @@ function Game:resolveCollision(x, y, entity)
         result, resolveX, resolveY = utils.collideRectCircle(map:rectAt(x, y), entity:getBoundingCircle())
 
         if result then
+
             entity.collided = true
             entity.position.x = entity.position.x + resolveX
             entity.position.y = entity.position.y + resolveY
