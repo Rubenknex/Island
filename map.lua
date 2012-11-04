@@ -1,3 +1,4 @@
+require "color"
 require "utils"
 require "noise"
 require "vec2"
@@ -7,10 +8,17 @@ SAND = 2
 GRASS = 3
 ROCK = 4
 
+TILE_COLORS = {
+    {Color.fromHSL(218, 100, 40), Color.fromHSL(218, 100, 60)},
+    {Color.fromHSL(59, 55, 67), Color.fromHSL(59, 55, 77)},
+    {Color.fromHSL(103, 50, 32), Color.fromHSL(103, 50, 23)},
+    {Color.fromHSL(0, 0, 40), Color.fromHSL(0, 0, 32)}
+}
+
 Tile = {}
 Tile.__index = Tile
 
-function Tile.create(type, value, transition)
+function Tile.create(type, value, transition, interpolation)
     -- type: The type of the tile (water, grass etc).
     -- value: The value from the noise map, the type is derived from this.
     -- transition: Stores the combination of neighbouring tiles, used as offset in the tileset.
@@ -20,6 +28,10 @@ function Tile.create(type, value, transition)
     self.type = type
     self.value = value
     self.transition = transition
+    self.tileColor = TILE_COLORS[self.type][1]:interpolate(TILE_COLORS[self.type][2], interpolation)
+    if self.type ~= ROCK then
+        self.transitionColor = TILE_COLORS[self.type + 1][1]
+    end
     self.decal = nil
 
     return self
@@ -41,7 +53,7 @@ function Map.create(width, height)
 
     self:generate(width, height)
 
-    self.tileset = love.graphics.newImage("data/terrain_2.png")
+    self.tileset = love.graphics.newImage("data/terrain.png")
     self.quads = {}
     for y=0, 3 do
         self.quads[y + 1] = {}
@@ -81,13 +93,15 @@ function Map:draw()
             if x >= 0 and y >= 0 and x < self.width and y < self.height then
                 local currentTile = self.tiles[x + 1][y + 1]
 
-                love.graphics.setColor(255, 255, 255, 255)
+                love.graphics.setColor(currentTile.tileColor:toRGB())
                 love.graphics.drawq(self.tileset, self.quads[currentTile.type][1], posX, posY, 0, 2)
                 
                 if currentTile.transition > 0 then
+                    love.graphics.setColor(currentTile.transitionColor:toRGB())
                     love.graphics.drawq(self.tileset, self.quads[currentTile.type + 1][currentTile.transition + 1], posX, posY, 0, 2)
                 end
 
+                love.graphics.setColor(255, 255, 255)
                 if currentTile.decal ~= nil then
                     love.graphics.drawq(self.decals, self.decalQuads[currentTile.decal], posX, posY, 0, 2)
                 end
@@ -116,20 +130,32 @@ function Map:generate(width, height)
     utils.arrayToImage(data, "4 - Smoothened")
 
     local types = {}
+    local interpolations = {}
     for x=1, width do
         types[x] = {}
+        interpolations[x] = {}
 
         for y=1, height do
             local type = WATER
             local value = data[x][y]
+            local interpolation = 0
 
-            if value < WATER_LIMIT then type = WATER
-            elseif value < SAND_LIMIT then type = SAND
-            elseif value < GRASS_LIMIT then type = GRASS
-            elseif value < ROCK_LIMIT then type = ROCK
+            if value < WATER_LIMIT then 
+                type = WATER
+                interpolation = utils.normalize(value, 0, WATER_LIMIT)
+            elseif value < SAND_LIMIT then 
+                type = SAND
+                interpolation = utils.normalize(value, WATER_LIMIT, SAND_LIMIT)
+            elseif value < GRASS_LIMIT then 
+                type = GRASS
+                interpolation = utils.normalize(value, SAND_LIMIT, GRASS_LIMIT)
+            elseif value < ROCK_LIMIT then 
+                type = ROCK
+                interpolation = utils.normalize(value, GRASS_LIMIT, 1)
             end
 
             types[x][y] = type
+            interpolations[x][y] = interpolation
         end
     end
 
@@ -152,7 +178,7 @@ function Map:generate(width, height)
             if bottom > currentType then transition = transition + 4 end
             if left > currentType then transition = transition + 8 end
 
-            self.tiles[x][y] = Tile.create(currentType, data[x][y], transition)
+            self.tiles[x][y] = Tile.create(currentType, data[x][y], transition, interpolations[x][y])
         end
     end
 
