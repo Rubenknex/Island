@@ -9,8 +9,8 @@ GRASS = 3
 ROCK = 4
 
 TILE_COLORS = {
-    {Color.fromHSL(218, 100, 40), Color.fromHSL(218, 100, 60)},
-    {Color.fromHSL(59, 55, 67), Color.fromHSL(59, 55, 77)},
+    {Color.fromHSL(218, 100, 35), Color.fromHSL(218, 100, 60)},
+    {Color.fromHSL(59, 55, 67), Color.fromHSL(59, 55, 80)},
     {Color.fromHSL(103, 50, 32), Color.fromHSL(103, 50, 23)},
     {Color.fromHSL(0, 0, 40), Color.fromHSL(0, 0, 32)}
 }
