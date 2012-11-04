@@ -8,13 +8,6 @@ SAND = 2
 GRASS = 3
 ROCK = 4
 
-TILE_COLORS = {
-    {Color.fromHSL(218, 100, 35), Color.fromHSL(218, 100, 60)},
-    {Color.fromHSL(59, 55, 67), Color.fromHSL(59, 55, 80)},
-    {Color.fromHSL(103, 50, 32), Color.fromHSL(103, 50, 23)},
-    {Color.fromHSL(0, 0, 40), Color.fromHSL(0, 0, 32)}
-}
-
 Tile = {}
 Tile.__index = Tile
 
@@ -28,21 +21,14 @@ function Tile.create(type, value, transition, interpolation)
     self.type = type
     self.value = value
     self.transition = transition
-    self.tileColor = TILE_COLORS[self.type][1]:interpolate(TILE_COLORS[self.type][2], interpolation)
+    self.tileColor = tileColorTransitions[self.type][1]:interpolate(tileColorTransitions[self.type][2], interpolation)
     if self.type ~= ROCK then
-        self.transitionColor = TILE_COLORS[self.type + 1][1]
+        self.transitionColor = tileColorTransitions[self.type + 1][1]
     end
     self.decal = nil
 
     return self
 end
-
-TILE_SIZE = 16
-TILE_DRAW_SIZE = 32
-WATER_LIMIT = 0.3
-SAND_LIMIT = 0.4
-GRASS_LIMIT = 0.65
-ROCK_LIMIT = 1.0
 
 Map = {}
 Map.__index = Map
@@ -65,7 +51,7 @@ function Map.create(width, height)
     self.decals = love.graphics.newImage("data/decals.png")
     self.decalQuads = {}
     for x=0, 2 do
-        self.decalQuads[x + 1] = love.graphics.newQuad(x * TILE_SIZE, 0, TILE_SIZE, TILE_SIZE, self.decals:getWidth(), self.decals:getHeight())
+        self.decalQuads[x + 1] = love.graphics.newQuad(x * tileSize, 0, tileSize, tileSize, self.decals:getWidth(), self.decals:getHeight())
     end
 
     return self
@@ -77,18 +63,18 @@ end
 
 function Map:draw()
     local bounds = camera:getBounds()
-    local startX = math.floor(bounds.left / TILE_DRAW_SIZE)
-    local startY = math.floor(bounds.top / TILE_DRAW_SIZE)
-    local endX = math.ceil(bounds.right / TILE_DRAW_SIZE)
-    local endY = math.ceil(bounds.bottom / TILE_DRAW_SIZE)
+    local startX = math.floor(bounds.left / tileDrawSize)
+    local startY = math.floor(bounds.top / tileDrawSize)
+    local endX = math.ceil(bounds.right / tileDrawSize)
+    local endY = math.ceil(bounds.bottom / tileDrawSize)
 
     for x=startX, endX do
-        local posX = x * TILE_DRAW_SIZE
-        utils.debugDrawLine(255, 0, 0, 255, posX, startY * TILE_DRAW_SIZE, posX, endY * TILE_DRAW_SIZE)
+        local posX = x * tileDrawSize
+        utils.debugDrawLine(255, 0, 0, 255, posX, startY * tileDrawSize, posX, endY * tileDrawSize)
 
         for y=startY, endY do
-            local posY = y * TILE_DRAW_SIZE
-            utils.debugDrawLine(255, 0, 0, 255, startX * TILE_DRAW_SIZE, posY, endX * TILE_DRAW_SIZE, posY)
+            local posY = y * tileDrawSize
+            utils.debugDrawLine(255, 0, 0, 255, startX * tileDrawSize, posY, endX * tileDrawSize, posY)
 
             if x >= 0 and y >= 0 and x < self.width and y < self.height then
                 local currentTile = self.tiles[x + 1][y + 1]
@@ -113,10 +99,10 @@ end
 function Map:generate(width, height)
     self.width, self.height = width, height
 
-    local data = noise.fractionalBrownianMotion(width, height, 1.0, 1.0, 0.7, 6, os.time())
+    local data = noise.fractionalBrownianMotion(width, height, mapFrequency, mapAmplitude, mapPersistence, mapOctaves, os.time())
     utils.arrayToImage(data, "1 - Noise")
 
-    local islandMask = self:generateIslandMask(width, height, 30)
+    local islandMask = self:generateIslandMask(width, height, mapPadding)
     utils.arrayToImage(islandMask, "2 - Mask")
 
     for x=1, width do
@@ -126,7 +112,7 @@ function Map:generate(width, height)
     end
     utils.arrayToImage(data, "3 - Masked")
 
-    data = utils.smoothenHeightMap(data, 5)
+    data = utils.smoothenHeightMap(data, mapSmoothingPasses)
     utils.arrayToImage(data, "4 - Smoothened")
 
     local types = {}
@@ -140,18 +126,18 @@ function Map:generate(width, height)
             local value = data[x][y]
             local interpolation = 0
 
-            if value < WATER_LIMIT then 
+            if value < waterLimit then 
                 type = WATER
-                interpolation = utils.normalize(value, 0, WATER_LIMIT)
-            elseif value < SAND_LIMIT then 
+                interpolation = utils.normalize(value, 0, waterLimit)
+            elseif value < sandLimit then 
                 type = SAND
-                interpolation = utils.normalize(value, WATER_LIMIT, SAND_LIMIT)
-            elseif value < GRASS_LIMIT then 
+                interpolation = utils.normalize(value, waterLimit, sandLimit)
+            elseif value < grassLimit then 
                 type = GRASS
-                interpolation = utils.normalize(value, SAND_LIMIT, GRASS_LIMIT)
-            elseif value < ROCK_LIMIT then 
+                interpolation = utils.normalize(value, sandLimit, grassLimit)
+            elseif value < rockLimit then 
                 type = ROCK
-                interpolation = utils.normalize(value, GRASS_LIMIT, 1)
+                interpolation = utils.normalize(value, grassLimit, 1)
             end
 
             types[x][y] = type
@@ -280,8 +266,8 @@ function Map:walkableAt(x, y)
 end
 
 function Map:tileTypeAt(x, y)
-    tileX = math.floor(x / TILE_DRAW_SIZE)
-    tileY = math.floor(y / TILE_DRAW_SIZE)
+    tileX = math.floor(x / tileDrawSize)
+    tileY = math.floor(y / tileDrawSize)
 
     if tileX >= 0 and tileX < self.width and tileY >= 0 and tileY < self.height then
         return self.tiles[tileX + 1][tileY + 1].type
@@ -291,8 +277,8 @@ function Map:tileTypeAt(x, y)
 end
 
 function Map:rectAt(x, y)
-    tileX = math.floor(x / TILE_DRAW_SIZE)
-    tileY = math.floor(y / TILE_DRAW_SIZE)
+    tileX = math.floor(x / tileDrawSize)
+    tileY = math.floor(y / tileDrawSize)
 
-    return Rect.create(tileX * TILE_DRAW_SIZE, tileY * TILE_DRAW_SIZE, TILE_DRAW_SIZE, TILE_DRAW_SIZE)
+    return Rect.create(tileX * tileDrawSize, tileY * tileDrawSize, tileDrawSize, tileDrawSize)
 end

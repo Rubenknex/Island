@@ -14,7 +14,7 @@ function Player.create()
     self.layer = 1
     self.position = Vec2.create(0, 0)
     while not map:walkableAt(self.position.x, self.position.y) do
-        self.position = Vec2.create((math.random(map.width) + 0.5) * TILE_DRAW_SIZE, (math.random(map.height) + 0.5) * TILE_DRAW_SIZE)
+        self.position = Vec2.create((math.random(map.width) + 0.5) * tileDrawSize, (math.random(map.height) + 0.5) * tileDrawSize)
     end
     self.collidable = true
 
@@ -26,9 +26,6 @@ function Player.create()
     self.animation:addSequence("left", 32, 0, 16, 16, 1)
     self.animation:addSequence("right", 48, 0, 16, 16, 1)
     self.animation:playSequence("down", "paused", 1)
-
-    self.normalSpeed = 150
-    self.sprintSpeed = 250
 
     self.dir = Vec2.create()
 
@@ -56,7 +53,7 @@ function Player:handleInput(dt)
     end
 
     if self.dir:length() > 0 then
-        local speed = love.keyboard.isDown("lshift") and self.sprintSpeed or self.normalSpeed
+        local speed = love.keyboard.isDown("lshift") and playerSprintSpeed or playerSpeed
         self.position = self.position + self.dir:normalized() * speed * dt
     else
         self.animation:pauseSequence(1)

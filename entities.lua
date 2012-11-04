@@ -16,12 +16,9 @@ function Crab.create(x, y)
 
     self.boundingCircle = Circle.create(x, y, 6)
 
-    self.speed = 50
     self.direction = Vec2.create()
     self.degrees = 0
     self.target = Vec2.create()
-    self.minRange = 20
-    self.maxRange = 40
     self.walking = false
     self.walkTime = 0.0
     self.idleTime = 0.0
@@ -37,13 +34,13 @@ end
 
 function Crab:update(dt)
     if self.walking then
-        local movement = self.direction * self.speed * dt
+        local movement = self.direction * crabSpeed * dt
 
         if self.walkTime <= 0.0 or self.collided or map:tileTypeAt(self.position.x, self.position.y) ~= SAND then
             self.position = self.position - movement
             self.walking = false
             self.collided = false
-            self.idleTime = 1.0 + math.random() * 2.0
+            self.idleTime = crabMinIdle + math.random() * (crabMaxIdle - crabMinIdle)
 
             self.animation:pauseSequence(1)
         else
@@ -81,9 +78,9 @@ function Crab:chooseTarget()
     elseif degrees >= 225 and degrees <= 315 then self.animation:playSequence("left", "loop", 0.2) end
 
     self.direction = Vec2.create(math.cos(angle), math.sin(angle))
-    local distance = math.random(self.minRange, self.maxRange)
+    local distance = math.random(crabMinRange, crabMaxRange)
     self.target = self.position + self.direction * distance
-    self.walkTime = distance / self.speed
+    self.walkTime = distance / crabSpeed
 end
 
 function Crab:getBoundingCircle()

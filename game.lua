@@ -82,7 +82,7 @@ function Game:placeEntities()
     for i=1, 10 do
         local position = Vec2.create(0, 0)
         while map:tileTypeAt(position.x, position.y) ~= SAND do
-            position = Vec2.create((math.random(map.width) + 0.5) * TILE_DRAW_SIZE, (math.random(map.height) + 0.5) * TILE_DRAW_SIZE)
+            position = Vec2.create((math.random(map.width) + 0.5) * tileDrawSize, (math.random(map.height) + 0.5) * tileDrawSize)
         end
 
         table.insert(entities, Crab.create(position.x, position.y))

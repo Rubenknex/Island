@@ -1,9 +1,5 @@
---[[
-Background story:
-You have become stranded on an island in the middle of the ocean, 
-]]
-
 require "game"
+require "variables"
 
 function love.load()
     debug = false
