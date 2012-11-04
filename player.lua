@@ -3,18 +3,6 @@ require "map"
 require "shapes"
 require "utils"
 
-Item = {}
-Item.__index = Item
-
-function Item.create(name)
-    local self = {}
-    setmetatable(self, Item)
-
-    self.name = name
-
-    return self
-end
-
 Player = {}
 Player.__index = Player
 
@@ -23,6 +11,7 @@ function Player.create()
     setmetatable(self, Player)
 
     self.type = "player"
+    self.layer = 1
     self.position = Vec2.create(0, 0)
     while not map:walkableAt(self.position.x, self.position.y) do
         self.position = Vec2.create((math.random(map.width) + 0.5) * TILE_DRAW_SIZE, (math.random(map.height) + 0.5) * TILE_DRAW_SIZE)
@@ -42,14 +31,6 @@ function Player.create()
     self.sprintSpeed = 250
 
     self.dir = Vec2.create()
-
-    self.health = 100
-    self.energy = 100
-
-    self.inventory = {}
-    table.insert(self.inventory, Item.create("Rope"))
-    table.insert(self.inventory, Item.create("Spade"))
-    table.insert(self.inventory, Item.create("Knife"))
 
     return self
 end
