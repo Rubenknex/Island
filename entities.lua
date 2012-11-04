@@ -9,8 +9,10 @@ function Crab.create(x, y)
     setmetatable(self, Crab)
 
     self.type = "crab"
+    self.layer = 0
     self.position = Vec2.create(x, y)
     self.collidable = true
+    self.collided = false
 
     self.boundingCircle = Circle.create(x, y, 6)
 
@@ -20,7 +22,6 @@ function Crab.create(x, y)
     self.target = Vec2.create()
     self.minRange = 20
     self.maxRange = 40
-    self.collided = false
     self.walking = false
     self.walkTime = 0.0
     self.idleTime = 0.0

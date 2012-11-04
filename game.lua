@@ -39,9 +39,7 @@ function Game.create()
     self:placeEntities()
 
     self.mapButtonRect = Rect.create(640 - 35, 480 - 35, 30, 30)
-    self.inventoryButtonRect = Rect.create(640 - 35 - 35, 480 - 35, 30, 30)
     self.showMap = false
-    self.showInventory = false
 
     return self
 end
@@ -67,6 +65,8 @@ function Game:draw()
 
     camera:set()
     map:draw()
+
+    table.sort(entities, function(a, b) return a.layer < b.layer end)
     for k, v in pairs(entities) do
         v:draw()
     end
@@ -95,7 +95,6 @@ function Game:resolveCollision(x, y, entity)
         result, resolveX, resolveY = utils.collideRectCircle(map:rectAt(x, y), entity:getBoundingCircle())
 
         if result then
-
             entity.collided = true
             entity.position.x = entity.position.x + resolveX
             entity.position.y = entity.position.y + resolveY
@@ -132,7 +131,6 @@ end
 function Game:updateUI(dt)
     local mX, mY = love.mouse.getPosition()
     
-    self.showInventory = self.inventoryButtonRect:contains(mX, mY)
     self.showMap = self.mapButtonRect:contains(mX, mY)
 end
 
@@ -141,38 +139,14 @@ function Game:drawUI()
     love.graphics.setColor(135, 72, 0)
     love.graphics.rectangle("fill", 0, 480 - 40, 640, 40)
 
-    -- Health bar
-    love.graphics.setColor(255, 0, 0)
-    love.graphics.rectangle("fill", 5, 480 - 35, 100, 10)
-
-    -- Energy bar
-    love.graphics.setColor(224, 27, 106)
-    love.graphics.rectangle("fill", 5, 480 - 15, 100, 10)
-
     -- Map button
     love.graphics.setColor(200, 161, 123)
     love.graphics.rectangle("fill", 640 - 35, 480 - 35, 30, 30)
     love.graphics.setColor(0, 0, 0)
     love.graphics.print("M", 640 - 35, 480 - 35)
 
-    -- Inventory button
-    love.graphics.setColor(200, 161, 123)
-    love.graphics.rectangle("fill", 640 - 35 - 35, 480 - 35, 30, 30)
-    love.graphics.setColor(0, 0, 0)
-    love.graphics.print("I", 640 - 35 - 35, 480 - 35)
-
     if self.showMap then 
         love.graphics.setColor(200, 161, 123)
         love.graphics.draw(map.minimap, 640 - 256 - 5, 480 - 256 - 40 - 5, 0, 2)
-    end
-
-    if self.showInventory then
-        love.graphics.setColor(200, 161, 123)
-        love.graphics.rectangle("fill", 640 - 200 - 5, 480 - 300 - 40 - 5, 200, 300)
-
-        love.graphics.setColor(0, 0, 0)
-        for i=1, #player.inventory do
-            love.graphics.print(player.inventory[i].name, 640 - 200 - 5, 480 - 300 - 40 - 5 + i * 12)
-        end
     end
 end
