@@ -2,6 +2,10 @@ require "vec2"
 
 utils = {}
 
+function utils.normalize(value, min, max)
+    return (value - min) / (max - min)
+end
+
 function utils.clamp(value, min, max)
     -- Returns the value clamped between min and max.
     if value < min then
@@ -22,26 +26,6 @@ function utils.cerp(a, b, x)
     -- Returns the cosine interpolated value between a and b.
     local f = (1 - math.cos(x * math.pi)) * 0.5
     return a * (1 - f) + b * f
-end
-
-function utils.hslToRgb(h, s, l)
-    if s == 0 then return l, l, l end
-
-    h, s, l = (h / 256) * 6, (s / 255), (l / 255)
-
-    local c = (1 - math.abs(2 * l - 1)) * s
-    local x = (1  -math.abs(h % 2 - 1)) * c
-    local m, r, g, b = (l - .5 * c), 0, 0, 0
-
-    if h < 1     then r, g, b = c, x, 0
-    elseif h < 2 then r, g, b = x, c, 0
-    elseif h < 3 then r, g, b = 0, c, x
-    elseif h < 4 then r, g, b = 0, x, c
-    elseif h < 5 then r, g, b = x, 0, c
-    else              r, g, b = c, 0, x
-    end 
-
-    return (r + m) * 255, (g + m) * 255, (b + m) * 255
 end
 
 function utils.collideRectCircle(rect, circle)
