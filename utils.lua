@@ -2,12 +2,6 @@ require "vec2"
 
 utils = {}
 
-function utils.cerp(a, b, x)
-    -- Returns the cosine interpolated value between a and b.
-    local f = (1 - math.cos(x * math.pi)) * 0.5
-    return a * (1 - f) + b * f
-end
-
 function utils.clamp(value, min, max)
     -- Returns the value clamped between min and max.
     if value < min then
@@ -22,6 +16,12 @@ end
 function utils.lerp(a, b, x)
     -- Returns the linear interpolated value between a and b.
     return a + (b - a) * x
+end
+
+function utils.cerp(a, b, x)
+    -- Returns the cosine interpolated value between a and b.
+    local f = (1 - math.cos(x * math.pi)) * 0.5
+    return a * (1 - f) + b * f
 end
 
 function utils.collideRectCircle(rect, circle)
@@ -40,17 +40,6 @@ function utils.collideRectCircle(rect, circle)
     else
         return false, 0, 0
     end
-end
-
-function utils.collideRectCircle2(rect, pos, radius)
-    local closestX = utils.clamp(pos.x, rect.left, rect.right)
-    local closestY = utils.clamp(pos.y, rect.top, rect.bottom)
-
-    local distX = pos.x - closestX
-    local distY = pos.y - closestY
-
-    local distSquared = distX ^ 2 + distY ^ 2
-    
 end
 
 function utils.smoothenHeightMap(data, passes)

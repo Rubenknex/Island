@@ -15,7 +15,7 @@ function perlin.seed(seed)
     for i=0, 255 do p[256 + i] = p[i] end
 end
 
-function perlin.fade(t)
+function perlin.smootherstep(t)
     return t * t * t * (t * (t * 6 - 15) + 10)
 end
 
@@ -43,8 +43,8 @@ function perlin.noise(x, y)
     local fracX = x - math.floor(x)
     local fracY = y - math.floor(y)
 
-    local u = perlin.fade(fracX)
-    local v = perlin.fade(fracY)
+    local u = perlin.smootherstep(fracX)
+    local v = perlin.smootherstep(fracY)
 
     local A  = p[X] + Y
     local AA = p[A]

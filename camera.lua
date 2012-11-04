@@ -34,11 +34,6 @@ function Camera:unset()
     love.graphics.pop()
 end
 
-function Camera:lerp(x, y, a)
-    self.x = self.x + (x - self.x) * a
-    self.y = self.y + (y - self.y) * a
-end
-
 function Camera:move(dx, dy)
     self.x = self.x + dx
     self.y = self.y + dy

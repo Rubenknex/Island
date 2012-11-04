@@ -57,7 +57,8 @@ function Game:update(dt)
 
     self:updateUI(dt)
 
-    camera:lerp(player.position.x, player.position.y, 0.05)
+    camera.x = utils.lerp(camera.x, player.position.x, 0.05)
+    camera.y = utils.lerp(camera.y, player.position.y, 0.05)
 end
 
 function Game:draw()
