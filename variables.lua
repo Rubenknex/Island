@@ -18,7 +18,7 @@ rockLimit = 1.0
 
 -- These colors are in HSL format
 tileColorTransitions = {
-	{Color.fromHSL(218, 100, 35), Color.fromHSL(218, 100, 60)}, -- Water
+    {Color.fromHSL(218, 100, 35), Color.fromHSL(218, 100, 60)}, -- Water
     {Color.fromHSL(59, 55, 67),   Color.fromHSL(59, 55, 80)},   -- Sand
     {Color.fromHSL(103, 50, 32),  Color.fromHSL(103, 50, 23)},  -- Grass
     {Color.fromHSL(0, 0, 40),     Color.fromHSL(0, 0, 32)}      -- Rock
