@@ -8,28 +8,6 @@ SAND = 2
 GRASS = 3
 ROCK = 4
 
-Tile = {}
-Tile.__index = Tile
-
-function Tile.create(type, value, transition, interpolation)
-    -- type: The type of the tile (water, grass etc).
-    -- value: The value from the noise map, the type is derived from this.
-    -- transition: Stores the combination of neighbouring tiles, used as offset in the tileset.
-    local self = {}
-    setmetatable(self, Tile)
-
-    self.type = type
-    self.value = value
-    self.transition = transition
-    self.tileColor = tileColorTransitions[self.type][1]:interpolate(tileColorTransitions[self.type][2], interpolation)
-    if self.type ~= ROCK then
-        self.transitionColor = tileColorTransitions[self.type + 1][1]
-    end
-    self.decal = nil
-
-    return self
-end
-
 Map = {}
 Map.__index = Map
 
@@ -77,19 +55,19 @@ function Map:draw()
             utils.debugDrawLine(255, 0, 0, 255, startX * tileDrawSize, posY, endX * tileDrawSize, posY)
 
             if x >= 0 and y >= 0 and x < self.width and y < self.height then
-                local currentTile = self.tiles[x + 1][y + 1]
+                local tile = self.tiles[x + 1][y + 1]
 
-                love.graphics.setColor(currentTile.tileColor:toRGB())
-                love.graphics.drawq(self.tileset, self.quads[currentTile.type][1], posX, posY, 0, 2)
+                love.graphics.setColor(tile.color:toRGB())
+                love.graphics.drawq(self.tileset, self.quads[tile.type][1], posX, posY, 0, 2)
                 
-                if currentTile.transition > 0 then
-                    love.graphics.setColor(currentTile.transitionColor:toRGB())
-                    love.graphics.drawq(self.tileset, self.quads[currentTile.type + 1][currentTile.transition + 1], posX, posY, 0, 2)
+                if tile.transition > 0 then
+                    love.graphics.setColor(tileColorTransitions[tile.type + 1][1]:toRGB())
+                    love.graphics.drawq(self.tileset, self.quads[tile.type + 1][tile.transition + 1], posX, posY, 0, 2)
                 end
 
                 love.graphics.setColor(255, 255, 255)
-                if currentTile.decal ~= nil then
-                    love.graphics.drawq(self.decals, self.decalQuads[currentTile.decal], posX, posY, 0, 2)
+                if tile.decal ~= nil then
+                    love.graphics.drawq(self.decals, self.decalQuads[tile.decal], posX, posY, 0, 2)
                 end
             end
         end
@@ -100,26 +78,24 @@ function Map:generate(width, height)
     self.width, self.height = width, height
 
     local data = noise.fractionalBrownianMotion(width, height, mapFrequency, mapAmplitude, mapPersistence, mapOctaves, os.time())
-    utils.arrayToImage(data, "1 - Noise")
+    --utils.arrayToImage(data, "1 - Noise")
 
     local islandMask = self:generateIslandMask(width, height, mapPadding)
-    utils.arrayToImage(islandMask, "2 - Mask")
+    --utils.arrayToImage(islandMask, "2 - Mask")
 
     for x=1, width do
         for y=1, height do
             data[x][y] = data[x][y] * islandMask[x][y]
         end
     end
-    utils.arrayToImage(data, "3 - Masked")
+    --utils.arrayToImage(data, "3 - Masked")
 
     data = utils.smoothenHeightMap(data, mapSmoothingPasses)
-    utils.arrayToImage(data, "4 - Smoothened")
+    --utils.arrayToImage(data, "4 - Smoothened")
 
-    local types = {}
-    local interpolations = {}
+    self.tiles = {}
     for x=1, width do
-        types[x] = {}
-        interpolations[x] = {}
+        self.tiles[x] = {}
 
         for y=1, height do
             local type = WATER
@@ -140,31 +116,32 @@ function Map:generate(width, height)
                 interpolation = utils.normalize(value, grassLimit, 1)
             end
 
-            types[x][y] = type
-            interpolations[x][y] = interpolation
+            self.tiles[x][y] = {
+                value = value,
+                type = type,
+                interpolation = interpolation,
+                color = Color.interpolate(tileColorTransitions[type][1], tileColorTransitions[type][2], interpolation)
+            }
         end
     end
 
     -- Calculate which transition tiles must be placed where using bitwise counting.
     -- http://www.saltgames.com/2010/a-bitwise-method-for-applying-tilemaps/
-    self.tiles = {}
     for x=1, self.width do
-        self.tiles[x] = {}
-
         for y=1, self.height do
-            local top = (y > 1) and types[x][y - 1] or 0
-            local right = (x < self.width) and types[x + 1][y] or 0
-            local bottom = (y < self.height) and types[x][y + 1] or 0
-            local left = (x > 1) and types[x - 1][y] or 0
+            local top = (y > 1) and self.tiles[x][y - 1].type or 0
+            local right = (x < self.width) and self.tiles[x + 1][y].type or 0
+            local bottom = (y < self.height) and self.tiles[x][y + 1].type or 0
+            local left = (x > 1) and self.tiles[x - 1][y].type or 0
 
             local transition = 0
-            local currentType = types[x][y]
+            local currentType = self.tiles[x][y].type
             if top > currentType then transition = transition + 1 end
             if right > currentType then transition = transition + 2 end
             if bottom > currentType then transition = transition + 4 end
             if left > currentType then transition = transition + 8 end
 
-            self.tiles[x][y] = Tile.create(currentType, data[x][y], transition, interpolations[x][y])
+            self.tiles[x][y].transition = transition
         end
     end
 
