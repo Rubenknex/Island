@@ -78,20 +78,20 @@ function Map:generate(width, height)
     self.width, self.height = width, height
 
     local data = noise.fractionalBrownianMotion(width, height, mapFrequency, mapAmplitude, mapPersistence, mapOctaves, os.time())
-    --utils.arrayToImage(data, "1 - Noise")
+    utils.arrayToImage(data, "1 - Noise")
 
     local islandMask = self:generateIslandMask(width, height, mapPadding)
-    --utils.arrayToImage(islandMask, "2 - Mask")
+    utils.arrayToImage(islandMask, "2 - Mask")
 
     for x=1, width do
         for y=1, height do
             data[x][y] = data[x][y] * islandMask[x][y]
         end
     end
-    --utils.arrayToImage(data, "3 - Masked")
+    utils.arrayToImage(data, "3 - Masked")
 
     data = utils.smoothenHeightMap(data, mapSmoothingPasses)
-    --utils.arrayToImage(data, "4 - Smoothened")
+    utils.arrayToImage(data, "4 - Smoothened")
 
     self.tiles = {}
     for x=1, width do
@@ -150,55 +150,14 @@ function Map:generate(width, height)
     self:placeDecals()
 end
 
-function Map:generateIslandMask(width, height, maskDistance)
-    -- Generates a mask with values ranging from 0 to 1 with which to multiply
-    -- the height map.
-    -- Credit goes to http://breinygames.blogspot.nl/2012/06/generating-terrain-using-perlin-noise.html
+function Map:generateIslandMask(width, height, size)
     local mask = {}
     for x=1, width do
         mask[x] = {}
         for y=1, height do
-            mask[x][y] = 0
-        end
-    end
-
-    for i=1, math.floor(width * height * 0.60) do
-        local x = math.random(maskDistance, width - maskDistance)
-        local y = math.random(maskDistance, height - maskDistance)
-
-        for j=1, math.floor(width * height * 0.1) do
-            mask[x][y] = mask[x][y] + 5
-
-            if mask[x][y] > 255 then mask[x][y] = 255 end
-            local value = mask[x][y]
-
-            local directions = {}
-            if x - 1 >= 1 then
-                if mask[x - 1][y] <= value then table.insert(directions, "left") end
-            end
-            if x + 1 <= width then
-                if mask[x + 1][y] <= value then table.insert(directions, "right") end
-            end
-            if y - 1 >= 1 then
-                if mask[x][y - 1] <= value then table.insert(directions, "up") end
-            end
-            if y + 1 <= height then
-                if mask[x][y + 1] <= value then table.insert(directions, "down") end
-            end
-
-            if #directions == 0 then break end
-
-            local direction = directions[math.random(#directions)]
-            if direction == "left" then x = x - 1 end
-            if direction == "right" then x = x + 1 end
-            if direction == "up" then y = y - 1 end
-            if direction == "down" then y = y + 1 end
-        end
-    end
-    
-    for x=1, width do
-        for y=1, height do
-            mask[x][y] = mask[x][y] / 255
+            local distanceToCenter = math.sqrt((width / 2 - x) ^ 2 + (height / 2 - y) ^ 2) - size
+            local normalized = utils.normalize(distanceToCenter, width / 2, 0)
+            mask[x][y] = utils.smootherstep(utils.clamp(normalized, 0, 1))
         end
     end
 

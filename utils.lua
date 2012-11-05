@@ -28,6 +28,14 @@ function utils.cerp(a, b, x)
     return a * (1 - f) + b * f
 end
 
+function utils.smoothstep(x)
+    return x * x * (3 - 2 * x)
+end
+
+function utils.smootherstep(x)
+    return x * x * x * (x * (x * 6 - 15) + 10)
+end
+
 function utils.collideRectCircle(rect, circle)
     local closestX = utils.clamp(circle.x, rect.left, rect.right)
     local closestY = utils.clamp(circle.y, rect.top, rect.bottom)

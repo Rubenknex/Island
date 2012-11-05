@@ -4,14 +4,14 @@ require "color"
 tileSize = 16
 tileDrawSize = 32
 
-mapFrequency = 1.0
-mapAmplitude = 2.0
-mapPersistence = 0.7
+mapFrequency = 3
+mapAmplitude = 1
+mapPersistence = 0.6
 mapOctaves = 6
-mapPadding = 30
+mapPadding = 15
 mapSmoothingPasses = 5
 
-waterLimit = 0.3
+waterLimit = 0.35
 sandLimit = 0.4
 grassLimit = 0.65
 rockLimit = 1.0
