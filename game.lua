@@ -90,6 +90,7 @@ function Game:placeEntities()
         end
 
         table.insert(entities, Crab.create(position.x, position.y))
+        table.insert(entities, Seagull.create(position.x, position.y))
     end
 end
 

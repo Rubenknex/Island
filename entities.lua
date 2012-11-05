@@ -89,3 +89,48 @@ function Crab:getBoundingCircle()
 
     return self.boundingCircle
 end
+
+Seagull = {}
+Seagull.__index = Seagull
+
+function Seagull.create(x, y)
+    local self = {}
+    setmetatable(self, Seagull)
+
+    self.type = "seagull"
+    self.layer = 2
+    self.position = Vec2.create(x, y)
+    self.collidable = false
+
+    self.target = Vec2.create()
+    self.direction = Vec2.create()
+    self:chooseTarget()
+    self.angle = 0
+
+    self.animation = Animation.create(love.graphics.newImage("data/seagull.png"))
+    self.animation:addSequence("fly", 0, 0, 16, 16, 1)
+    self.animation:playSequence("fly", "loop", 0.3)
+
+    return self
+end
+
+function Seagull:update(dt)
+    self.position = self.position + self.direction * 50 * dt
+
+    if self.position:distance(self.target) < 10 then
+        self:chooseTarget()
+    end
+
+    self.animation:update(dt)
+end
+
+function Seagull:draw()
+    love.graphics.drawq(self.animation.image, self.animation:getCurrentQuad(), self.position.x, self.position.y, self.angle, 2, 2, 8, 8)
+end
+
+function Seagull:chooseTarget()
+    self.angle = math.random(0, 2 * math.pi)
+    self.direction = Vec2.create(math.cos(self.angle), math.sin(self.angle))
+    local distance = math.random(100, 200)
+    self.target = self.position + self.direction * distance
+end

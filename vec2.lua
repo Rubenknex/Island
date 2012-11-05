@@ -31,7 +31,7 @@ end
 function Vec2:distance(other)
     local difference = self - other
 
-    return difference.length()
+    return difference:length()
 end
 
 function Vec2.__add(a, b)

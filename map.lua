@@ -78,20 +78,20 @@ function Map:generate(width, height)
     self.width, self.height = width, height
 
     local data = noise.fractionalBrownianMotion(width, height, mapFrequency, mapAmplitude, mapPersistence, mapOctaves, os.time())
-    utils.arrayToImage(data, "1 - Noise")
+    --utils.arrayToImage(data, "1 - Noise")
 
     local islandMask = self:generateIslandMask(width, height, mapPadding)
-    utils.arrayToImage(islandMask, "2 - Mask")
+    --utils.arrayToImage(islandMask, "2 - Mask")
 
     for x=1, width do
         for y=1, height do
             data[x][y] = data[x][y] * islandMask[x][y]
         end
     end
-    utils.arrayToImage(data, "3 - Masked")
+    --utils.arrayToImage(data, "3 - Masked")
 
     data = utils.smoothenHeightMap(data, mapSmoothingPasses)
-    utils.arrayToImage(data, "4 - Smoothened")
+    --utils.arrayToImage(data, "4 - Smoothened")
 
     self.tiles = {}
     for x=1, width do
