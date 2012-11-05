@@ -1,5 +1,7 @@
 require "camera"
+require "color"
 require "entities"
+require "gui"
 require "map"
 require "player"
 require "shapes"
@@ -38,8 +40,10 @@ function Game.create()
     table.insert(entities, player)
     self:placeEntities()
 
-    self.mapButtonRect = Rect.create(640 - 35, 480 - 35, 30, 30)
-    self.showMap = false
+    self.mapButton = Button.create(640 - 35, 480 - 35, 30, 30)
+    self.mapButton.color = Color.fromRGB(255, 255, 255)
+    self.mapButton.text = "Map"
+    self.mapButton.onHover = Game.drawMinimap
 
     return self
 end
@@ -129,9 +133,7 @@ function Game:handleCollisions()
 end
 
 function Game:updateUI(dt)
-    local mX, mY = love.mouse.getPosition()
     
-    self.showMap = self.mapButtonRect:contains(mX, mY)
 end
 
 function Game:drawUI()
@@ -140,13 +142,11 @@ function Game:drawUI()
     love.graphics.rectangle("fill", 0, 480 - 40, 640, 40)
 
     -- Map button
-    love.graphics.setColor(200, 161, 123)
-    love.graphics.rectangle("fill", 640 - 35, 480 - 35, 30, 30)
-    love.graphics.setColor(0, 0, 0)
-    love.graphics.print("M", 640 - 35, 480 - 35)
+    self.mapButton:update()
+    self.mapButton:draw()
+end
 
-    if self.showMap then 
-        love.graphics.setColor(200, 161, 123)
-        love.graphics.draw(map.minimap, 640 - 256 - 5, 480 - 256 - 40 - 5, 0, 2)
-    end
+function Game:drawMinimap()
+    love.graphics.setColor(200, 161, 123)
+    love.graphics.draw(map.minimap, 640 - 256 - 5, 480 - 256 - 40 - 5, 0, 2)
 end
