@@ -1,9 +1,8 @@
 Animation = {}
-Animation.__index = Animation
 
 function Animation.create(image)
     local self = {}
-    setmetatable(self, Animation)
+    setmetatable(self, {__index = Animation})
 
     self.image = image
     self.sequences = {}

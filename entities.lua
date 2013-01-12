@@ -1,6 +1,40 @@
 require "animation"
 require "map"
 
+Tree = {}
+Tree.__index = Tree
+
+function Tree.create(treeType, x, y)
+    local self = {}
+    setmetatable(self, Tree)
+
+    self.type = "tree"
+    self.layer = 0
+    self.position = Vec2.create(x, y)
+    self.collidable = true
+    self.static = true
+
+    self.treeType = treeType
+    self.image = love.graphics.newImage("data/" .. treeType .. ".png")
+
+    return self
+end
+
+function Tree:update(dt)
+
+end
+
+function Tree:draw()
+    love.graphics.setColor(255, 255, 255, 255)
+    love.graphics.draw(self.image, self.position.x, self.position.y, 0, 2, 2, self.image:getWidth() / 2, self.image:getHeight())
+
+    utils.debugDrawCircle(255, 0, 0, 255, self:getCollisionCircle())
+end
+
+function Tree:getCollisionCircle()
+    return Circle.create(self.position.x, self.position.y, 8)
+end
+
 Crab = {}
 Crab.__index = Crab
 
@@ -12,6 +46,8 @@ function Crab.create(x, y)
     self.layer = 0
     self.position = Vec2.create(x, y)
     self.collidable = true
+    self.static = false
+
     self.collided = false
 
     self.boundingCircle = Circle.create(x, y, 6)
@@ -64,7 +100,7 @@ function Crab:draw()
 
     love.graphics.drawq(self.animation.image, self.animation:getCurrentQuad(), self.position.x, self.position.y, 0, 2, 2, 8, 8)
 
-    utils.debugDrawCircle(255, 0, 0, 255, self:getBoundingCircle())
+    utils.debugDrawCircle(255, 0, 0, 255, self:getCollisionCircle())
 end
 
 function Crab:chooseTarget()
@@ -83,7 +119,7 @@ function Crab:chooseTarget()
     self.walkTime = distance / crabSpeed
 end
 
-function Crab:getBoundingCircle()
+function Crab:getCollisionCircle()
     self.boundingCircle.x = self.position.x
     self.boundingCircle.y = self.position.y
 
@@ -134,3 +170,4 @@ function Seagull:chooseTarget()
     local distance = math.random(100, 200)
     self.target = self.position + self.direction * distance
 end
+

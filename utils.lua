@@ -2,6 +2,10 @@ require "vec2"
 
 utils = {}
 
+function utils.random(min, max)
+    return math.random() * (max - min)
+end
+
 function utils.normalize(value, min, max)
     return (value - min) / (max - min)
 end
@@ -37,20 +41,31 @@ function utils.smootherstep(x)
 end
 
 function utils.collideRectCircle(rect, circle)
-    local closestX = utils.clamp(circle.x, rect.left, rect.right)
-    local closestY = utils.clamp(circle.y, rect.top, rect.bottom)
+    local closest = Vec2.create(utils.clamp(circle.x, rect.left, rect.right), 
+                                utils.clamp(circle.y, rect.top, rect.bottom))
 
-    local distX = circle.x - closestX
-    local distY = circle.y - closestY
-    local distLength = math.sqrt(distX ^ 2 + distY ^ 2)
+    local distanceVec = Vec2.create(circle.x, circle.y) - closest
+    local distance = distanceVec:length()
 
-    if distLength < circle.radius and distLength ~= 0 then
-        local resolveX = (distX / distLength) * (circle.radius - distLength)
-        local resolveY = (distY / distLength) * (circle.radius - distLength)
-
-        return true, resolveX, resolveY
+    if distance < circle.radius and distance ~= 0 then
+        local resolve = distanceVec:normalized() * (circle.radius - distance)
+        return true, resolve
     else
-        return false, 0, 0
+        return false, nil
+    end
+end
+
+function utils.collideCircleCircle(a, b)
+    local distanceVec = Vec2.create(b.x, b.y) - Vec2.create(a.x, a.y)
+    local distance = distanceVec:length()
+
+    if distance < a.radius + b.radius and distance ~= 0 then
+        local overlap = (a.radius + b.radius) - distance
+        local resolve = distanceVec:normalized() * overlap
+
+        return true, resolve
+    else
+        return false, nil
     end
 end
 

@@ -41,3 +41,7 @@ end
 function Circle:intersect(other)
 
 end
+
+function Circle.__tostring(a)
+    return "Circle(" .. a.x .. "," .. a.y .. "," .. a.radius .. ")"
+end

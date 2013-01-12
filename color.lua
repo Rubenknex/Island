@@ -3,11 +3,11 @@ require "utils"
 Color = {}
 Color.__index = Color
 
-function Color.fromRGB(r, g, b)
+function Color.fromRGB(r, g, b, a)
     local self = {}
     setmetatable(self, Color)
 
-    self.r, self.g, self.b = r, g, b
+    self.r, self.g, self.b, self.a = r, g, b, a or 255
 
     return self
 end
@@ -17,6 +17,7 @@ function Color.fromHSL(h, s, l)
     setmetatable(self, Color)
 
     self.r, self.g, self.b = Color.hslToRgb(h, s, l)
+    self.a = 255
 
     return self
 end
@@ -50,6 +51,10 @@ function Color:toRGB()
     return self.r, self.g, self.b
 end
 
+function Color:toRGBA()
+    return self.r, self.g, self.b, self.a
+end
+
 function Color.__tostring(a)
-    return "(" .. a.r .. ", " .. a.g .. ", " .. a.b .. ")"
+    return "Color(" .. a.r .. "," .. a.g .. "," .. a.b .. "," .. a.a ")"
 end

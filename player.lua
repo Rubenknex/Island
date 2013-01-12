@@ -11,14 +11,15 @@ function Player.create()
     setmetatable(self, Player)
 
     self.type = "player"
-    self.layer = 1
+    self.layer = 0
     self.position = Vec2.create(0, 0)
     while not map:walkableAt(self.position.x, self.position.y) do
         self.position = Vec2.create((math.random(map.width) + 0.5) * tileDrawSize, (math.random(map.height) + 0.5) * tileDrawSize)
     end
     self.collidable = true
+    self.static = false
 
-    self.boundingCircle = Circle.create(self.position.x, self.position.y + 18, 6)
+    self.radius = 7
 
     self.animation = Animation.create(love.graphics.newImage("data/man.png"))
     self.animation:addSequence("down", 0, 0, 16, 16, 1)
@@ -60,11 +61,8 @@ function Player:handleInput(dt)
     end
 end
 
-function Player:getBoundingCircle()
-    self.boundingCircle.x = self.position.x
-    self.boundingCircle.y = self.position.y  + 18
-
-    return self.boundingCircle
+function Player:getCollisionCircle()
+    return Circle.create(self.position.x, self.position.y - 6, self.radius)
 end
 
 function Player:update(dt)
@@ -73,7 +71,7 @@ end
 
 function Player:draw()
     love.graphics.setColor(255, 255, 255, 255)
-    love.graphics.drawq(self.animation.image, self.animation:getCurrentQuad(), self.position.x, self.position.y, 0, 3, 3, 8, 8)
+    love.graphics.drawq(self.animation.image, self.animation:getCurrentQuad(), self.position.x, self.position.y, 0, 3, 3, 8, 16)
     
-    utils.debugDrawCircle(255, 0, 0, 255, self:getBoundingCircle())
+    utils.debugDrawCircle(255, 0, 0, 255, self:getCollisionCircle())
 end

@@ -67,5 +67,5 @@ function Vec2.__eq(a, b)
 end
 
 function Vec2.__tostring(a)
-    return "(" .. a.x .. ", " .. a.y .. ")"
+    return "Vec2(" .. a.x .. ", " .. a.y .. ")"
 end

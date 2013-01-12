@@ -15,8 +15,6 @@ function Map.create(width, height)
     local self = {}
     setmetatable(self, Map)
 
-    self:generate(width, height)
-
     self.tileset = love.graphics.newImage("data/terrain.png")
     self.quads = {}
     for y=0, 3 do
@@ -31,6 +29,8 @@ function Map.create(width, height)
     for x=0, 2 do
         self.decalQuads[x + 1] = love.graphics.newQuad(x * tileSize, 0, tileSize, tileSize, self.decals:getWidth(), self.decals:getHeight())
     end
+
+    self:generate(width, height)
 
     return self
 end
@@ -145,7 +145,7 @@ function Map:generate(width, height)
         end
     end
 
-    self:generateMinimap()
+    self.minimap = self:generateMinimap()
 
     self:placeDecals()
 end
@@ -166,19 +166,13 @@ end
 
 function Map:generateMinimap()
     local minimapData = love.image.newImageData(self.width, self.height)
-    for x=1, self.width do
-        for y=1, self.height do
-            local type = self.tiles[x][y].type
-
-            if type == WATER then minimapData:setPixel(x - 1, y - 1, 31, 34, 222, 255)
-            elseif type == SAND then minimapData:setPixel(x - 1, y - 1, 252, 227, 58, 255)
-            elseif type == GRASS then minimapData:setPixel(x - 1, y - 1, 0, 128, 30, 255)
-            elseif type == ROCK then minimapData:setPixel(x - 1, y - 1, 82, 82, 82, 255)
-            end
+    for x=0, self.width - 1 do
+        for y=0, self.height - 1 do
+            minimapData:setPixel(x, y, self.tiles[x + 1][y + 1].color:toRGBA())
         end
     end
 
-    self.minimap = love.graphics.newImage(minimapData)
+    return love.graphics.newImage(minimapData)
 end
 
 function Map:placeDecals()
@@ -189,10 +183,6 @@ function Map:placeDecals()
             end
         end
     end
-end
-
-function Map:placePlants()
-
 end
 
 function Map:walkableAt(x, y)
