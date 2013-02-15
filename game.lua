@@ -33,7 +33,7 @@ function Game:update(dt)
     self.spatialhash:clear()
 
     for k, v in pairs(entities) do
-        v:update(dt)
+        if v.update then v:update(dt) end
 
         if v.collidable and not v.static then
             self.spatialhash:insert(v)
@@ -59,7 +59,7 @@ function Game:draw()
     local bounds = camera:getBounds()
     for k, v in pairs(entities) do
         if bounds:contains(v.position.x, v.position.y) then
-            v:draw()
+            if v.draw then v:draw() end
         end
     end
     camera:unset()
@@ -105,11 +105,11 @@ function Game:resolveCollision(x, y, entity)
 end
 
 function Game:handleCollisions()
-    for k, v in pairs(entities) do
-        if v.collidable and not v.static then
-            v.collided = false
+    for k, e in pairs(entities) do
+        if e.collidable and not e.static then
+            e.collided = false
 
-            local circle = v:getCollisionCircle()
+            local circle = e:getCollisionCircle()
             leftX = circle.x - circle.radius
             middleX = circle.x
             rightX = circle.x + circle.radius
@@ -117,33 +117,28 @@ function Game:handleCollisions()
             middleY = circle.y
             bottomY = circle.y + circle.radius
 
-            self:resolveCollision(leftX, middleY, v)
-            self:resolveCollision(rightX, middleY, v)
-            self:resolveCollision(middleX, topY, v)
-            self:resolveCollision(middleX, bottomY, v)
-
-            self:resolveCollision(leftX, topY, v)
-            self:resolveCollision(leftX, bottomY, v)
-            self:resolveCollision(rightX, topY, v)
-            self:resolveCollision(rightX, bottomY, v)
+            self:resolveCollision(leftX, middleY, e)
+            self:resolveCollision(rightX, middleY, e)
+            self:resolveCollision(middleX, topY, e)
+            self:resolveCollision(middleX, bottomY, e)
         end
     end
 
-    for k1, v1 in pairs(entities) do
-        local nearby = self.spatialhash:getNearby(v1)
+    for k1, e1 in pairs(entities) do
+        local nearby = self.spatialhash:getNearby(e1)
 
-        for k2, v2 in pairs(nearby) do
-            if k1 ~= k2 and not (v1.static and v2.static) then
-                local result, resolve = utils.collideCircleCircle(v1:getCollisionCircle(), v2:getCollisionCircle())
+        for k2, e2 in pairs(nearby) do
+            if k1 ~= k2 and not (e1.static and e2.static) then
+                local result, resolve = utils.collideCircleCircle(e1:getCollisionCircle(), e2:getCollisionCircle())
 
                 if result then
-                    if v1.static then
-                        v2.position = v2.position + resolve
-                    elseif v2.static then
-                        v1.position = v1.position - resolve
+                    if e1.static then
+                        e2.position = e2.position + resolve
+                    elseif e2.static then
+                        e1.position = e1.position - resolve
                     else
-                        v1.position = v1.position - resolve / 2
-                        v2.position = v2.position + resolve / 2
+                        e1.position = e1.position - resolve / 2
+                        e2.position = e2.position + resolve / 2
                     end
                 end
             end

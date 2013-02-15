@@ -11,7 +11,6 @@ function utils.normalize(value, min, max)
 end
 
 function utils.clamp(value, min, max)
-    -- Returns the value clamped between min and max.
     if value < min then
         return min
     elseif value > max then
@@ -22,12 +21,10 @@ function utils.clamp(value, min, max)
 end
 
 function utils.lerp(a, b, x)
-    -- Returns the linear interpolated value between a and b.
     return a + (b - a) * x
 end
 
 function utils.cerp(a, b, x)
-    -- Returns the cosine interpolated value between a and b.
     local f = (1 - math.cos(x * math.pi)) * 0.5
     return a * (1 - f) + b * f
 end

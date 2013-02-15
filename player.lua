@@ -6,15 +6,12 @@ require "utils"
 Player = class()
 
 function Player:init()
-    self.type = "player"
-    self.layer = 0
     self.position = Vec2(0, 0)
     while not map:walkableAt(self.position.x, self.position.y) do
         self.position = Vec2((math.random(map.width) + 0.5) * tileDrawSize, (math.random(map.height) + 0.5) * tileDrawSize)
     end
     self.collidable = true
     self.static = false
-
     self.radius = 7
 
     self.animation = Animation(love.graphics.newImage("data/man.png"))
@@ -23,40 +20,6 @@ function Player:init()
     self.animation:addSequence("left", 32, 0, 16, 16, 1)
     self.animation:addSequence("right", 48, 0, 16, 16, 1)
     self.animation:playSequence("down", "paused", 1)
-
-    self.dir = Vec2()
-end
-
-function Player:handleInput(dt)
-    self.dir:set(0, 0)
-
-    if love.keyboard.isDown("a") then
-        self.dir.x = -1
-        self.animation:playSequence("left", "paused", 1)
-    end
-    if love.keyboard.isDown("d") then
-        self.dir.x = self.dir.x + 1
-        self.animation:playSequence("right", "paused", 1)
-    end
-    if love.keyboard.isDown("w") then
-        self.dir.y = -1
-        self.animation:playSequence("up", "paused", 1)
-    end
-    if love.keyboard.isDown("s") then
-        self.dir.y = self.dir.y + 1
-        self.animation:playSequence("down", "paused", 1)
-    end
-
-    if self.dir:length() > 0 then
-        local speed = love.keyboard.isDown("lshift") and playerSprintSpeed or playerSpeed
-        self.position = self.position + self.dir:normalized() * speed * dt
-    else
-        self.animation:pauseSequence(1)
-    end
-end
-
-function Player:getCollisionCircle()
-    return Circle(self.position.x, self.position.y - 6, self.radius)
 end
 
 function Player:update(dt)
@@ -69,3 +32,36 @@ function Player:draw()
     
     utils.debugDrawCircle(255, 0, 0, 255, self:getCollisionCircle())
 end
+
+function Player:handleInput(dt)
+    local dir = Vec2()
+
+    if love.keyboard.isDown("a") then
+        dir.x = -1
+        self.animation:playSequence("left", "paused", 1)
+    end
+    if love.keyboard.isDown("d") then
+        dir.x = dir.x + 1
+        self.animation:playSequence("right", "paused", 1)
+    end
+    if love.keyboard.isDown("w") then
+        dir.y = -1
+        self.animation:playSequence("up", "paused", 1)
+    end
+    if love.keyboard.isDown("s") then
+        dir.y = dir.y + 1
+        self.animation:playSequence("down", "paused", 1)
+    end
+
+    if dir:length() > 0 then
+        local speed = love.keyboard.isDown("lshift") and playerSprintSpeed or playerSpeed
+        self.position = self.position + dir:normalized() * speed * dt
+    else
+        self.animation:pauseSequence(1)
+    end
+end
+
+function Player:getCollisionCircle()
+    return Circle(self.position.x, self.position.y - 6, self.radius)
+end
+

@@ -4,18 +4,12 @@ require "map"
 Tree = class()
 
 function Tree:init(treeType, x, y)
-    self.type = "tree"
-    self.layer = 0
     self.position = Vec2(x, y)
     self.collidable = true
     self.static = true
 
     self.treeType = treeType
     self.image = love.graphics.newImage("data/" .. treeType .. ".png")
-end
-
-function Tree:update(dt)
-
 end
 
 function Tree:draw()
@@ -32,8 +26,6 @@ end
 Crab = class()
 
 function Crab:init(x, y)
-    self.type = "crab"
-    self.layer = 0
     self.position = Vec2(x, y)
     self.collidable = true
     self.static = false
