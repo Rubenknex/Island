@@ -1,8 +1,8 @@
 Rect = class()
 
-function Rect:init(x, y, width, height)
-    self.left, self.top = x, y
-    self.right, self.bottom = x + width, y + height
+function Rect:init(left, top, width, height)
+    self.left, self.top = left, top
+    self.right, self.bottom = left + width, top + height
     self.width, self.height = width, height
 end
 
@@ -17,6 +17,10 @@ end
 
 function Rect:contains(x, y)
     return x >= self.left and x <= self.right and y >= self.top and y <= self.bottom
+end
+
+function Rect.__tostring(a)
+    return "Rect(" .. a.left .. "," .. a.right .. "," .. a.width .. "," .. a.height .. ")"
 end
 
 Circle = class()
