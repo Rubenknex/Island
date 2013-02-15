@@ -1,15 +1,9 @@
-Rect = {}
-Rect.__index = Rect
+Rect = class()
 
-function Rect.create(x, y, width, height)
-    local self = {}
-    setmetatable(self, Rect)
-
+function Rect:init(x, y, width, height)
     self.left, self.top = x, y
     self.right, self.bottom = x + width, y + height
     self.width, self.height = width, height
-
-    return self
 end
 
 function Rect:intersect(other)
@@ -25,17 +19,11 @@ function Rect:contains(x, y)
     return x >= self.left and x <= self.right and y >= self.top and y <= self.bottom
 end
 
-Circle = {}
-Circle.__index = Circle
+Circle = class()
 
-function Circle.create(x, y, radius)
-    local self = {}
-    setmetatable(self, Circle)
-
+function Circle:init(x, y, radius)
     self.x, self.y = x, y
     self.radius = radius
-
-    return self
 end
 
 function Circle:intersect(other)

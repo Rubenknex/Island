@@ -1,30 +1,16 @@
 require "color"
 require "shapes"
 
---[[
-GUI elements:
+Button = class()
 
-- Label
-- Button
-- TextBox
-]]--
-
-Button = {}
-Button.__index = Button
-
-function Button.create(x, y, width, height)
-    local self = {}
-    setmetatable(self, Button)
-
-    self.rect = Rect.create(x, y, width, height)
+function Button:init(x, y, width, height)
+    self.rect = Rect(x, y, width, height)
     self.color = nil
     self.text = nil
     self.image = nil
 
     self.onHover = nil
     self.onClick = nil
-
-    return self
 end
 
 function Button:update(dt)

@@ -1,3 +1,4 @@
+require "class"
 require "game"
 require "variables"
 
@@ -7,7 +8,7 @@ function love.load()
 
     love.graphics.setDefaultImageFilter("nearest", "nearest")
 
-    game = Game.create()
+    game = Game()
 end
 
 function love.keypressed(key, unicode)

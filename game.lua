@@ -9,28 +9,22 @@ require "spatialhash"
 require "utils"
 require "vec2"
 
-Game = {}
-Game.__index = Game
+Game = class()
 
-function Game.create()
-    local self = {}
-    setmetatable(self, Game)
+function Game:init()
+    camera = Camera()
+    map = Map(128, 128)
+    player = Player()
 
-    camera = Camera.create()
-    map = Map.create(128, 128)
-    player = Player.create()
-
-    self.spatialhash = SpatialHash.create(10 * tileDrawSize)
+    self.spatialhash = SpatialHash(10 * tileDrawSize)
     entities = {}
     table.insert(entities, player)
     self:placeEntities()
 
-    self.mapButton = Button.create(640 - 35, 480 - 35, 30, 30)
-    self.mapButton.color = Color.fromRGB(255, 255, 255)
+    self.mapButton = Button(640 - 35, 480 - 35, 30, 30)
+    self.mapButton.color = Color(255, 255, 255)
     self.mapButton.text = "Map"
     self.mapButton.onHover = Game.drawMinimap
-
-    return self
 end
 
 function Game:update(dt)
@@ -78,22 +72,22 @@ end
 
 function Game:placeEntities()
     for i=1, 10 do
-        local position = Vec2.create(0, 0)
+        local position = Vec2(0, 0)
         repeat
-            position = Vec2.create((math.random(map.width) + 0.5) * tileDrawSize, (math.random(map.height) + 0.5) * tileDrawSize)
+            position = Vec2((math.random(map.width) + 0.5) * tileDrawSize, (math.random(map.height) + 0.5) * tileDrawSize)
         until map:tileTypeAt(position.x, position.y) == SAND
 
-        table.insert(entities, Crab.create(position.x, position.y))
+        table.insert(entities, Crab(position.x, position.y))
     end
 
     for x=1, map.width do
         for y=1, map.height do
             local s = 128
             local p = 0.4
-            local point = Vec2.create(x * s + utils.random(-p, p) * s, y * s + utils.random(-p, p) * s)
+            local point = Vec2(x * s + utils.random(-p, p) * s, y * s + utils.random(-p, p) * s)
 
             if map:tileTypeAt(point.x, point.y) == GRASS then
-                table.insert(entities, Tree.create("palmtree", point.x, point.y))
+                table.insert(entities, Tree("palmtree", point.x, point.y))
             end
         end
     end

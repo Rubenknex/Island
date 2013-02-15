@@ -3,34 +3,28 @@ require "map"
 require "shapes"
 require "utils"
 
-Player = {}
-Player.__index = Player
+Player = class()
 
-function Player.create()
-    local self = {}
-    setmetatable(self, Player)
-
+function Player:init()
     self.type = "player"
     self.layer = 0
-    self.position = Vec2.create(0, 0)
+    self.position = Vec2(0, 0)
     while not map:walkableAt(self.position.x, self.position.y) do
-        self.position = Vec2.create((math.random(map.width) + 0.5) * tileDrawSize, (math.random(map.height) + 0.5) * tileDrawSize)
+        self.position = Vec2((math.random(map.width) + 0.5) * tileDrawSize, (math.random(map.height) + 0.5) * tileDrawSize)
     end
     self.collidable = true
     self.static = false
 
     self.radius = 7
 
-    self.animation = Animation.create(love.graphics.newImage("data/man.png"))
+    self.animation = Animation(love.graphics.newImage("data/man.png"))
     self.animation:addSequence("down", 0, 0, 16, 16, 1)
     self.animation:addSequence("up", 16, 0, 16, 16, 1)
     self.animation:addSequence("left", 32, 0, 16, 16, 1)
     self.animation:addSequence("right", 48, 0, 16, 16, 1)
     self.animation:playSequence("down", "paused", 1)
 
-    self.dir = Vec2.create()
-
-    return self
+    self.dir = Vec2()
 end
 
 function Player:handleInput(dt)
@@ -62,7 +56,7 @@ function Player:handleInput(dt)
 end
 
 function Player:getCollisionCircle()
-    return Circle.create(self.position.x, self.position.y - 6, self.radius)
+    return Circle(self.position.x, self.position.y - 6, self.radius)
 end
 
 function Player:update(dt)

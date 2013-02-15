@@ -41,10 +41,10 @@ function utils.smootherstep(x)
 end
 
 function utils.collideRectCircle(rect, circle)
-    local closest = Vec2.create(utils.clamp(circle.x, rect.left, rect.right), 
-                                utils.clamp(circle.y, rect.top, rect.bottom))
+    local closest = Vec2(utils.clamp(circle.x, rect.left, rect.right), 
+                        utils.clamp(circle.y, rect.top, rect.bottom))
 
-    local distanceVec = Vec2.create(circle.x, circle.y) - closest
+    local distanceVec = Vec2(circle.x, circle.y) - closest
     local distance = distanceVec:length()
 
     if distance < circle.radius and distance ~= 0 then
@@ -56,7 +56,7 @@ function utils.collideRectCircle(rect, circle)
 end
 
 function utils.collideCircleCircle(a, b)
-    local distanceVec = Vec2.create(b.x, b.y) - Vec2.create(a.x, a.y)
+    local distanceVec = Vec2(b.x, b.y) - Vec2(a.x, a.y)
     local distance = distanceVec:length()
 
     if distance < a.radius + b.radius and distance ~= 0 then

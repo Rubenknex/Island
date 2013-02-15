@@ -3,13 +3,9 @@ require "utils"
 
 -- Credit goes to: http://nova-fusion.com/2011/04/19/cameras-in-love2d-part-1-the-basics/
 
-Camera = {}
-Camera.__index = Camera
+Camera = class()
 
-function Camera.create(x, y, scale, rotation)
-    local self = {}
-    setmetatable(self, Camera)
-
+function Camera:init(x, y, scale, rotation)
     self.width = love.graphics.getWidth()
     self.height = love.graphics.getHeight()
 
@@ -17,8 +13,6 @@ function Camera.create(x, y, scale, rotation)
     self.y = y or 0
     self.scale = scale or 1
     self.rotation = rotation or 0
-
-    return self
 end
 
 function Camera:set()
@@ -57,5 +51,5 @@ function Camera:setRotation(rotation)
 end
 
 function Camera:getBounds()
-    return Rect.create(self.x - self.width / 2, self.y - self.height / 2, self.width, self.height)
+    return Rect(self.x - self.width / 2, self.y - self.height / 2, self.width, self.height)
 end

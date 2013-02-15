@@ -1,9 +1,6 @@
-Animation = {}
+Animation = class()
 
-function Animation.create(image)
-    local self = {}
-    setmetatable(self, {__index = Animation})
-
+function Animation:init(image)
     self.image = image
     self.sequences = {}
     self.currentSequence = nil
@@ -17,8 +14,6 @@ function Animation.create(image)
     self.mode = nil
     self.interval = 0
     self.timer = 0
-
-    return self
 end
 
 function Animation:addSequence(name, x, y, frameWidth, frameHeight, length)

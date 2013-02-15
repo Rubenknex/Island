@@ -1,25 +1,15 @@
 require "utils"
 
-Color = {}
-Color.__index = Color
+Color = class()
 
-function Color.fromRGB(r, g, b, a)
-    local self = {}
-    setmetatable(self, Color)
-
+function Color:init(r, g, b, a)
     self.r, self.g, self.b, self.a = r, g, b, a or 255
-
-    return self
 end
 
 function Color.fromHSL(h, s, l)
-    local self = {}
-    setmetatable(self, Color)
+    local r, g, b = Color.hslToRgb(h, s, l)
 
-    self.r, self.g, self.b = Color.hslToRgb(h, s, l)
-    self.a = 255
-
-    return self
+    return Color(r, g, b)
 end
 
 function Color.hslToRgb(h, s, l)
@@ -38,13 +28,13 @@ function Color.hslToRgb(h, s, l)
     else              r, g, b = c, 0, x
     end 
 
-    return (r + m) * 255, (g + m) * 255, (b + m) * 255, a
+    return (r + m) * 255, (g + m) * 255, (b + m) * 255
 end
 
 function Color.interpolate(a, b, x)
-    return Color.fromRGB(utils.lerp(a.r, b.r, x), 
-                         utils.lerp(a.g, b.g, x), 
-                         utils.lerp(a.b, b.b, x))
+    return Color(utils.lerp(a.r, b.r, x), 
+                 utils.lerp(a.g, b.g, x), 
+                 utils.lerp(a.b, b.b, x))
 end
 
 function Color:toRGB()

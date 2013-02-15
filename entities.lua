@@ -1,23 +1,17 @@
 require "animation"
 require "map"
 
-Tree = {}
-Tree.__index = Tree
+Tree = class()
 
-function Tree.create(treeType, x, y)
-    local self = {}
-    setmetatable(self, Tree)
-
+function Tree:init(treeType, x, y)
     self.type = "tree"
     self.layer = 0
-    self.position = Vec2.create(x, y)
+    self.position = Vec2(x, y)
     self.collidable = true
     self.static = true
 
     self.treeType = treeType
     self.image = love.graphics.newImage("data/" .. treeType .. ".png")
-
-    return self
 end
 
 function Tree:update(dt)
@@ -32,40 +26,34 @@ function Tree:draw()
 end
 
 function Tree:getCollisionCircle()
-    return Circle.create(self.position.x, self.position.y, 8)
+    return Circle(self.position.x, self.position.y, 8)
 end
 
-Crab = {}
-Crab.__index = Crab
+Crab = class()
 
-function Crab.create(x, y)
-    self = {}
-    setmetatable(self, Crab)
-
+function Crab:init(x, y)
     self.type = "crab"
     self.layer = 0
-    self.position = Vec2.create(x, y)
+    self.position = Vec2(x, y)
     self.collidable = true
     self.static = false
 
     self.collided = false
 
-    self.boundingCircle = Circle.create(x, y, 6)
+    self.boundingCircle = Circle(x, y, 6)
 
-    self.direction = Vec2.create()
+    self.direction = Vec2()
     self.degrees = 0
-    self.target = Vec2.create()
+    self.target = Vec2()
     self.walking = false
     self.walkTime = 0.0
     self.idleTime = 0.0
 
-    self.animation = Animation.create(love.graphics.newImage("data/crab.png"))
+    self.animation = Animation(love.graphics.newImage("data/crab.png"))
     self.animation:addSequence("down", 0, 0, 16, 16, 2)
     self.animation:addSequence("up", 0, 16, 16, 16, 2)
     self.animation:addSequence("left", 0, 32, 16, 16, 2)
     self.animation:addSequence("right", 0, 48, 16, 16, 2)
-
-    return self
 end
 
 function Crab:update(dt)
@@ -113,7 +101,7 @@ function Crab:chooseTarget()
     elseif degrees >= 135 and degrees <= 225 then self.animation:playSequence("down", "loop", 0.2)
     elseif degrees >= 225 and degrees <= 315 then self.animation:playSequence("left", "loop", 0.2) end
 
-    self.direction = Vec2.create(math.cos(angle), math.sin(angle))
+    self.direction = Vec2(math.cos(angle), math.sin(angle))
     local distance = math.random(crabMinRange, crabMaxRange)
     self.target = self.position + self.direction * distance
     self.walkTime = distance / crabSpeed

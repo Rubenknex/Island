@@ -8,13 +8,9 @@ SAND = 2
 GRASS = 3
 ROCK = 4
 
-Map = {}
-Map.__index = Map
+Map = class()
 
-function Map.create(width, height)
-    local self = {}
-    setmetatable(self, Map)
-
+function Map:init(width, height)
     self.tileset = love.graphics.newImage("data/terrain.png")
     self.quads = {}
     for y=0, 3 do
@@ -31,8 +27,6 @@ function Map.create(width, height)
     end
 
     self:generate(width, height)
-
-    return self
 end
 
 function Map:update(dt)
@@ -206,5 +200,5 @@ function Map:rectAt(x, y)
     tileX = math.floor(x / tileDrawSize)
     tileY = math.floor(y / tileDrawSize)
 
-    return Rect.create(tileX * tileDrawSize, tileY * tileDrawSize, tileDrawSize, tileDrawSize)
+    return Rect(tileX * tileDrawSize, tileY * tileDrawSize, tileDrawSize, tileDrawSize)
 end

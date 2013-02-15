@@ -1,14 +1,8 @@
-SpatialHash = {}
-SpatialHash.__index = SpatialHash
+SpatialHash = class()
 
-function SpatialHash.create(cellSize)
-    local self = {}
-    setmetatable(self, SpatialHash)
-
+function SpatialHash:init(cellSize)
     self.cells = {}
     self.cellSize = cellSize
-
-    return self
 end
 
 function SpatialHash:clear()
