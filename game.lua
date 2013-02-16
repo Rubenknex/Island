@@ -40,9 +40,8 @@ function Game:update(dt)
         end
     end
 
-    self:handleCollisions()
-
-    self:updateUI(dt)
+    self:handleMapCollisions()
+    self:handleEntityCollisions()
 
     camera.x = utils.lerp(camera.x, player.position.x, 0.05)
     camera.y = utils.lerp(camera.y, player.position.y, 0.05)
@@ -56,9 +55,8 @@ function Game:draw()
     map:draw()
 
     table.sort(entities, function(a, b) return a.position.y < b.position.y end)
-    local bounds = camera:getBounds()
     for k, v in pairs(entities) do
-        if bounds:contains(v.position.x, v.position.y) then
+        if camera:getBounds():contains(v.position.x, v.position.y) then
             if v.draw then v:draw() end
         end
     end
@@ -93,7 +91,28 @@ function Game:placeEntities()
     end
 end
 
-function Game:resolveCollision(x, y, entity)
+function Game:handleMapCollisions()
+    for k, e in pairs(entities) do
+        if e.collidable and not e.static then
+            e.collided = false
+
+            local circle = e:getCollisionCircle()
+            left = circle.x - circle.radius
+            middleX = circle.x
+            right = circle.x + circle.radius
+            top = circle.y - circle.radius
+            middleY = circle.y
+            bottom = circle.y + circle.radius
+
+            self:resolveMapCollision(left,   middleY, e)
+            self:resolveMapCollision(right,  middleY, e)
+            self:resolveMapCollision(middleX, top,    e)
+            self:resolveMapCollision(middleX, bottom, e)
+        end
+    end
+end
+
+function Game:resolveMapCollision(x, y, entity)
     if not map:walkableAt(x, y) then
         local result, resolve = utils.collideRectCircle(map:rectAt(x, y), entity:getCollisionCircle())
 
@@ -104,50 +123,30 @@ function Game:resolveCollision(x, y, entity)
     end
 end
 
-function Game:handleCollisions()
-    for k, e in pairs(entities) do
-        if e.collidable and not e.static then
-            e.collided = false
+function Game:handleEntityCollisions()
+    for k1, a in pairs(entities) do
+        local nearby = self.spatialhash:getNearby(a)
 
-            local circle = e:getCollisionCircle()
-            leftX = circle.x - circle.radius
-            middleX = circle.x
-            rightX = circle.x + circle.radius
-            topY = circle.y - circle.radius
-            middleY = circle.y
-            bottomY = circle.y + circle.radius
+        for k2, b in pairs(nearby) do
+            if k1 ~= k2 and not (a.static and b.static) then
+                local collision, resolve = utils.collideCircleCircle(a:getCollisionCircle(), b:getCollisionCircle())
 
-            self:resolveCollision(leftX, middleY, e)
-            self:resolveCollision(rightX, middleY, e)
-            self:resolveCollision(middleX, topY, e)
-            self:resolveCollision(middleX, bottomY, e)
-        end
-    end
-
-    for k1, e1 in pairs(entities) do
-        local nearby = self.spatialhash:getNearby(e1)
-
-        for k2, e2 in pairs(nearby) do
-            if k1 ~= k2 and not (e1.static and e2.static) then
-                local result, resolve = utils.collideCircleCircle(e1:getCollisionCircle(), e2:getCollisionCircle())
-
-                if result then
-                    if e1.static then
-                        e2.position = e2.position + resolve
-                    elseif e2.static then
-                        e1.position = e1.position - resolve
+                if collision then
+                    if a.static then
+                        b.position = b.position + resolve
+                    elseif b.static then
+                        a.position = a.position - resolve
                     else
-                        e1.position = e1.position - resolve / 2
-                        e2.position = e2.position + resolve / 2
+                        a.position = a.position - resolve / 2
+                        b.position = b.position + resolve / 2
                     end
+
+                    if a.collidedWith then a:collidedWith(b) end
+                    if b.collidedWith then b:collidedWith(a) end
                 end
             end
         end
     end
-end
-
-function Game:updateUI(dt)
-    
 end
 
 function Game:drawUI()
