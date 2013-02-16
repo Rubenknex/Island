@@ -1,6 +1,20 @@
 require "animation"
 require "map"
 
+--[[
+Entities
+
+Properties:
+- position
+- collidable
+- static
+
+Methods:
+- init
+- update
+- draw
+]]
+
 Tree = class()
 
 function Tree:init(treeType, x, y)
@@ -10,6 +24,7 @@ function Tree:init(treeType, x, y)
 
     self.treeType = treeType
     self.image = love.graphics.newImage("data/" .. treeType .. ".png")
+    self.visibility = Rect(0, 0, self.image:getWidth(), self.image:getHeight())
 end
 
 function Tree:draw()
@@ -21,6 +36,13 @@ end
 
 function Tree:getCollisionCircle()
     return Circle(self.position.x, self.position.y, 8)
+end
+
+function Tree:getVisibilityRect()
+    self.visibility.left = self.position.x
+    self.visibility.top = self.position.y
+
+    return self.visibility
 end
 
 Crab = class()
