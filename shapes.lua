@@ -6,7 +6,7 @@ function Rect:init(left, top, width, height)
     self.width, self.height = width, height
 end
 
-function Rect:intersect(other)
+function Rect:intersects(other)
     if self.right < other.left or self.left > other.right or
         self.bottom < other.top or self.top > other.bottom then
         return false

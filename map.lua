@@ -1,6 +1,5 @@
 require "color"
 require "utils"
-require "noise"
 require "vec2"
 
 WATER = 1
@@ -71,7 +70,7 @@ end
 function Map:generate(width, height)
     self.width, self.height = width, height
 
-    local data = noise.fractionalBrownianMotion(width, height, mapFrequency, mapAmplitude, mapPersistence, mapOctaves, os.time())
+    local data = utils.noiseMap(width, height, mapFrequency, mapAmplitude, mapPersistence, mapOctaves, os.time())
     --utils.arrayToImage(data, "1 - Noise")
 
     local islandMask = self:generateIslandMask(width, height, mapPadding)

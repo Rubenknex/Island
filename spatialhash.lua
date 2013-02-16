@@ -8,9 +8,9 @@ end
 function SpatialHash:clear()
     for k1, v1 in pairs(self.cells) do
         for k2, v2 in pairs(v1) do
-            for k, v in pairs(v2) do
-                if v.collidable and not v.static then
-                    table.remove(self.cells, k)
+            for index, e in pairs(v2) do
+                if e.collidable and not e.static then
+                    table.remove(self.cells, index)
                 end
             end
         end

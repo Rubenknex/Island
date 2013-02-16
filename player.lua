@@ -64,4 +64,3 @@ end
 function Player:getCollisionCircle()
     return Circle(self.position.x, self.position.y - 6, self.radius)
 end
-
