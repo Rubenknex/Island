@@ -90,8 +90,9 @@ function Map:generate(width, height)
 
             for key, tile in pairs(tileTypes) do
                 if value < tile.limit then
-                    if tileTypes[key - 1] then local lowerLimit = tileTypes[key - 1].limit end
-                    local interpolation = utils.normalize(value, lowerLimit or 0, tile.limit)
+                    local lowerLimit = 0
+                    if tileTypes[key - 1] then lowerLimit = tileTypes[key - 1].limit end
+                    local interpolation = utils.normalize(value, lowerLimit, tile.limit)
 
                     self.tiles[x][y] = {
                         type = tile.type,

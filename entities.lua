@@ -113,3 +113,7 @@ function Crab:getCollisionCircle()
 
     return self.boundingCircle
 end
+
+function Crab:collidedWith(other)
+    self.collided = true
+end
