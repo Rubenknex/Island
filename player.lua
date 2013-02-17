@@ -10,11 +10,12 @@ function Player:init()
     while map:tileAt(self.position.x, self.position.y).type == "water" do
         self.position = Vec2((math.random(map.width) + 0.5) * tileDrawSize, (math.random(map.height) + 0.5) * tileDrawSize)
     end
+    self.velocity = Vec2(0, 0)
     self.collidable = true
     self.static = false
     self.radius = 7
 
-    self.animation = Animation(love.graphics.newImage("data/man.png"))
+    self.animation = Animation(love.graphics.newImage("images/man.png"))
     self.animation:addSequence("down", 0, 0, 16, 16, 1)
     self.animation:addSequence("up", 16, 0, 16, 16, 1)
     self.animation:addSequence("left", 32, 0, 16, 16, 1)
@@ -55,7 +56,8 @@ function Player:handleInput(dt)
 
     if dir:length() > 0 then
         local speed = love.keyboard.isDown("lshift") and playerSprintSpeed or playerSpeed
-        self.position = self.position + dir:normalized() * speed * dt
+        self.velocity = dir:normalized() * speed * dt
+        self.position = self.position + self.velocity
     else
         self.animation:pauseSequence(1)
     end

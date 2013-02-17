@@ -9,7 +9,7 @@ function Tree:init(treeType, x, y)
     self.static = true
 
     self.treeType = treeType
-    self.image = love.graphics.newImage("data/" .. treeType .. ".png")
+    self.image = love.graphics.newImage("images/" .. treeType .. ".png")
     self.visibility = Rect(0, 0, self.image:getWidth(), self.image:getHeight())
 end
 
@@ -49,7 +49,7 @@ function Crab:init(x, y)
     self.walkTime = 0.0
     self.idleTime = 0.0
 
-    self.animation = Animation(love.graphics.newImage("data/crab.png"))
+    self.animation = Animation(love.graphics.newImage("images/crab.png"))
     self.animation:addSequence("down", 0, 0, 16, 16, 2)
     self.animation:addSequence("up", 0, 16, 16, 16, 2)
     self.animation:addSequence("left", 0, 32, 16, 16, 2)

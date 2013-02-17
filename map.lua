@@ -7,7 +7,7 @@ Map = class()
 function Map:init(width, height)
     self.width = width
     self.height = height
-    self.tileset = love.graphics.newImage("data/terrain.png")
+    self.tileset = love.graphics.newImage("images/terrain.png")
     self.quads = {}
     for y=0, 3 do
         self.quads[y + 1] = {}
@@ -16,7 +16,7 @@ function Map:init(width, height)
         end
     end
 
-    self.decals = love.graphics.newImage("data/decals.png")
+    self.decals = love.graphics.newImage("images/decals.png")
     self.decalQuads = {}
     for x=0, 2 do
         self.decalQuads[x + 1] = love.graphics.newQuad(x * tileSize, 0, tileSize, tileSize, self.decals:getWidth(), self.decals:getHeight())
@@ -49,14 +49,14 @@ function Map:draw()
 
                 love.graphics.setColor(tile.color:toRGB())
                 love.graphics.drawq(self.tileset, self.quads[tile.index][1], posX, posY, 0, 2)
-                
+
                 if tile.transition > 0 then
                     love.graphics.setColor(tileTypes[tile.index + 1].startColor:toRGB())
                     love.graphics.drawq(self.tileset, self.quads[tile.index + 1][tile.transition + 1], posX, posY, 0, 2)
                 end
 
-                love.graphics.setColor(255, 255, 255)
                 if tile.decal ~= nil then
+                    love.graphics.setColor(255, 255, 255)
                     love.graphics.drawq(self.decals, self.decalQuads[tile.decal], posX, posY, 0, 2)
                 end
             end

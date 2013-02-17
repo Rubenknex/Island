@@ -20,7 +20,7 @@ function Camera:set()
     love.graphics.translate(self.width / 2, self.height / 2)
     love.graphics.rotate(self.rotation)
     love.graphics.scale(self.scale)
-    love.graphics.translate(-self.x, -self.y)
+    love.graphics.translate(-math.floor(self.x + 0.5), -math.floor(self.y + 0.5))
 end
 
 function Camera:unset()
@@ -30,6 +30,16 @@ end
 function Camera:move(dx, dy)
     self.x = self.x + dx
     self.y = self.y + dy
+end
+
+function Camera:moveTo(target)
+    self.x = target.x
+    self.y = target.y
+end
+
+function Camera:moveToSmooth(target, speed, dt)
+    self.x = self.x - (self.x - target.x) * speed * dt
+    self.y = self.y - (self.y - target.y) * speed * dt
 end
 
 function Camera:rotate(dr)
