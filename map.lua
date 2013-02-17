@@ -2,14 +2,11 @@ require "color"
 require "utils"
 require "vec2"
 
-WATER = 1
-SAND = 2
-GRASS = 3
-ROCK = 4
-
 Map = class()
 
 function Map:init(width, height)
+    self.width = width
+    self.height = height
     self.tileset = love.graphics.newImage("data/terrain.png")
     self.quads = {}
     for y=0, 3 do
@@ -51,11 +48,11 @@ function Map:draw()
                 local tile = self.tiles[x + 1][y + 1]
 
                 love.graphics.setColor(tile.color:toRGB())
-                love.graphics.drawq(self.tileset, self.quads[tile.type][1], posX, posY, 0, 2)
+                love.graphics.drawq(self.tileset, self.quads[tile.index][1], posX, posY, 0, 2)
                 
                 if tile.transition > 0 then
-                    love.graphics.setColor(tileColorTransitions[tile.type + 1][1]:toRGB())
-                    love.graphics.drawq(self.tileset, self.quads[tile.type + 1][tile.transition + 1], posX, posY, 0, 2)
+                    love.graphics.setColor(tileTypes[tile.index + 1].startColor:toRGB())
+                    love.graphics.drawq(self.tileset, self.quads[tile.index + 1][tile.transition + 1], posX, posY, 0, 2)
                 end
 
                 love.graphics.setColor(255, 255, 255)
@@ -68,8 +65,6 @@ function Map:draw()
 end
 
 function Map:generate(width, height)
-    self.width, self.height = width, height
-
     local data = utils.noiseMap(width, height, mapFrequency, mapAmplitude, mapPersistence, mapOctaves, os.time())
     --utils.arrayToImage(data, "1 - Noise")
 
@@ -91,30 +86,24 @@ function Map:generate(width, height)
         self.tiles[x] = {}
 
         for y=1, height do
-            local type = WATER
             local value = data[x][y]
-            local interpolation = 0
 
-            if value < waterLimit then 
-                type = WATER
-                interpolation = utils.normalize(value, 0, waterLimit)
-            elseif value < sandLimit then 
-                type = SAND
-                interpolation = utils.normalize(value, waterLimit, sandLimit)
-            elseif value < grassLimit then 
-                type = GRASS
-                interpolation = utils.normalize(value, sandLimit, grassLimit)
-            elseif value < rockLimit then 
-                type = ROCK
-                interpolation = utils.normalize(value, grassLimit, 1)
+            for key, tile in pairs(tileTypes) do
+                if value < tile.limit then
+                    if tileTypes[key - 1] then local lowerLimit = tileTypes[key - 1].limit end
+                    local interpolation = utils.normalize(value, lowerLimit or 0, tile.limit)
+
+                    self.tiles[x][y] = {
+                        type = tile.type,
+                        index = key,
+                        value = value,
+                        interpolation = interpolation,
+                        color = Color.interpolate(tile.startColor, tile.endColor, interpolation)
+                    }
+
+                    break
+                end
             end
-
-            self.tiles[x][y] = {
-                value = value,
-                type = type,
-                interpolation = interpolation,
-                color = Color.interpolate(tileColorTransitions[type][1], tileColorTransitions[type][2], interpolation)
-            }
         end
     end
 
@@ -122,13 +111,13 @@ function Map:generate(width, height)
     -- http://www.saltgames.com/2010/a-bitwise-method-for-applying-tilemaps/
     for x=1, self.width do
         for y=1, self.height do
-            local top = (y > 1) and self.tiles[x][y - 1].type or 0
-            local right = (x < self.width) and self.tiles[x + 1][y].type or 0
-            local bottom = (y < self.height) and self.tiles[x][y + 1].type or 0
-            local left = (x > 1) and self.tiles[x - 1][y].type or 0
+            local top = (y > 1) and self.tiles[x][y - 1].index or 0
+            local right = (x < self.width) and self.tiles[x + 1][y].index or 0
+            local bottom = (y < self.height) and self.tiles[x][y + 1].index or 0
+            local left = (x > 1) and self.tiles[x - 1][y].index or 0
 
             local transition = 0
-            local currentType = self.tiles[x][y].type
+            local currentType = self.tiles[x][y].index
             if top > currentType then transition = transition + 1 end
             if right > currentType then transition = transition + 2 end
             if bottom > currentType then transition = transition + 4 end
@@ -171,7 +160,7 @@ end
 function Map:placeDecals()
     for x=1, self.width do
         for y=1, self.height do
-            if self.tiles[x][y].type == SAND and math.random(100) < 3 then
+            if self.tiles[x][y].type == "sand" and math.random(100) < 3 then
                 self.tiles[x][y].decal = math.random(1, 3)
             end
         end
@@ -181,7 +170,7 @@ end
 function Map:walkableAt(x, y)
     local type = self:tileTypeAt(x, y)
 
-    return type ~= nil and type ~= WATER
+    return type ~= nil and type ~= "water"
 end
 
 function Map:tileTypeAt(x, y)

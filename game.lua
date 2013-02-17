@@ -73,7 +73,7 @@ function Game:placeEntities()
         local position = Vec2(0, 0)
         repeat
             position = Vec2((math.random(map.width) + 0.5) * tileDrawSize, (math.random(map.height) + 0.5) * tileDrawSize)
-        until map:tileTypeAt(position.x, position.y) == SAND
+        until map:tileTypeAt(position.x, position.y) == "sand"
 
         table.insert(entities, Crab(position.x, position.y))
     end
@@ -84,7 +84,7 @@ function Game:placeEntities()
             local p = 0.4
             local point = Vec2(x * s + utils.random(-p, p) * s, y * s + utils.random(-p, p) * s)
 
-            if map:tileTypeAt(point.x, point.y) == GRASS then
+            if map:tileTypeAt(point.x, point.y) == "grass" then
                 table.insert(entities, Tree("palmtree", point.x, point.y))
             end
         end

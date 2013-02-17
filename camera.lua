@@ -1,5 +1,4 @@
 require "shapes"
-require "utils"
 
 -- Credit goes to: http://nova-fusion.com/2011/04/19/cameras-in-love2d-part-1-the-basics/
 

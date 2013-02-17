@@ -11,17 +11,11 @@ mapOctaves = 6
 mapPadding = 15
 mapSmoothingPasses = 5
 
-waterLimit = 0.35
-sandLimit = 0.4
-grassLimit = 0.9
-rockLimit = 1.0
-
--- These colors are in HSL format
-tileColorTransitions = {
-    {Color.fromHSL(218, 75, 35), Color.fromHSL(218, 75, 55)}, -- Water
-    {Color.fromHSL(59, 55, 67),   Color.fromHSL(59, 55, 80)},   -- Sand
-    {Color.fromHSL(103, 50, 32),  Color.fromHSL(103, 50, 23)},  -- Grass
-    {Color.fromHSL(0, 0, 40),     Color.fromHSL(0, 0, 32)}      -- Rock
+tileTypes = {
+	{type="water", limit=0.35, startColor=Color.fromHSL(218, 75, 35), endColor=Color.fromHSL(218, 75, 55)},
+	{type="sand", limit=0.4, startColor=Color.fromHSL(59, 55, 67), endColor=Color.fromHSL(59, 55, 80)},
+    {type="grass", limit=0.9, startColor=Color.fromHSL(103, 50, 32), endColor=Color.fromHSL(103, 50, 23)},
+    {type="rock", limit=1.0, startColor=Color.fromHSL(0, 0, 40), endColor=Color.fromHSL(0, 0, 32)}
 }
 
 -- Player
