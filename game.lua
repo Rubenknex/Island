@@ -35,7 +35,7 @@ function Game:update(dt)
     for k, v in pairs(entities) do
         if v.update then v:update(dt) end
 
-        if v.collidable and not v.static then
+        if v.collidable then
             self.spatialhash:insert(v)
         end
     end
@@ -66,14 +66,15 @@ function Game:draw()
 
     utils.debugPrint(255, 255, 255, 255, "FPS: " .. love.timer.getFPS(), 0, 0)
     utils.debugPrint(255, 255, 255, 255, "Player: " .. tostring(player.position), 0, 15)
+    utils.debugPrint(255, 255, 255, 255, tostring(self.spatialhash), 0, 30)
 end
 
 function Game:placeEntities()
     for i=1, 10 do
         local position = Vec2(0, 0)
-        repeat
-            position = Vec2((math.random(map.width) + 0.5) * tileDrawSize, (math.random(map.height) + 0.5) * tileDrawSize)
-        until map:tileTypeAt(position.x, position.y) == "sand"
+        while map:tileAt(position.x, position.y).type ~= "sand" do
+            position = Vec2((math.random(map.width - 1) + 0.5) * tileDrawSize, (math.random(map.height - 1) + 0.5) * tileDrawSize)
+        end
 
         table.insert(entities, Crab(position.x, position.y))
     end
@@ -84,7 +85,9 @@ function Game:placeEntities()
             local p = 0.4
             local point = Vec2(x * s + utils.random(-p, p) * s, y * s + utils.random(-p, p) * s)
 
-            if map:tileTypeAt(point.x, point.y) == "grass" then
+            local tile = map:tileAt(point.x, point.y)
+
+            if tile and tile.type == "grass" then
                 table.insert(entities, Tree("palmtree", point.x, point.y))
             end
         end
@@ -113,7 +116,7 @@ function Game:handleMapCollisions()
 end
 
 function Game:resolveMapCollision(x, y, entity)
-    if not map:walkableAt(x, y) then
+    if map:tileAt(x, y).type == "water" then
         local result, resolve = utils.collideRectCircle(map:rectAt(x, y), entity:getCollisionCircle())
 
         if result then

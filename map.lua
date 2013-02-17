@@ -167,18 +167,12 @@ function Map:placeDecals()
     end
 end
 
-function Map:walkableAt(x, y)
-    local type = self:tileTypeAt(x, y)
-
-    return type ~= nil and type ~= "water"
-end
-
-function Map:tileTypeAt(x, y)
+function Map:tileAt(x, y)
     tileX = math.floor(x / tileDrawSize)
     tileY = math.floor(y / tileDrawSize)
 
     if tileX >= 0 and tileX < self.width and tileY >= 0 and tileY < self.height then
-        return self.tiles[tileX + 1][tileY + 1].type
+        return self.tiles[tileX + 1][tileY + 1]
     else
         return nil
     end

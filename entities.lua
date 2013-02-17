@@ -1,20 +1,6 @@
 require "animation"
 require "map"
 
---[[
-Entities
-
-Properties:
-- position
-- collidable
-- static
-
-Methods:
-- init
-- update
-- draw
-]]
-
 Tree = class()
 
 function Tree:init(treeType, x, y)
@@ -74,7 +60,7 @@ function Crab:update(dt)
     if self.walking then
         local movement = self.direction * crabSpeed * dt
 
-        if self.walkTime <= 0.0 or self.collided or map:tileTypeAt(self.position.x, self.position.y) ~= SAND then
+        if self.walkTime <= 0.0 or self.collided or map:tileAt(self.position.x, self.position.y).type ~= "sand" then
             self.position = self.position - movement
             self.walking = false
             self.collided = false

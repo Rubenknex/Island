@@ -6,13 +6,9 @@ function SpatialHash:init(cellSize)
 end
 
 function SpatialHash:clear()
-    for k1, v1 in pairs(self.cells) do
-        for k2, v2 in pairs(v1) do
-            for index, e in pairs(v2) do
-                if e.collidable and not e.static then
-                    table.remove(self.cells, index)
-                end
-            end
+    for k1, cell in pairs(self.cells) do
+        for k2, e in pairs(cell) do
+            cell[k2] = nil
         end
     end
 end
@@ -20,31 +16,45 @@ end
 function SpatialHash:insert(entity)
     local circle = entity:getCollisionCircle()
 
-    table.insert(self:getCellAt(circle.x, circle.y), entity)
+    table.insert(self:getCell(circle.x, circle.y), entity)
 end
 
 function SpatialHash:getNearby(entity)
     local circle = entity:getCollisionCircle()
 
-    return self:getCellAt(circle.x, circle.y)
+    return self:getCell(circle.x, circle.y)
 end
 
-function SpatialHash:cellCoords(x, y)
-    return math.floor(x / self.cellSize), math.floor(y / self.cellSize)
+function SpatialHash:getKey(x, y)
+    return math.floor(x / self.cellSize) + math.floor(y / self.cellSize) * self.cellSize
 end
 
-function SpatialHash:getCell(i, j)
-    if self.cells[i] == nil then 
-        self.cells[i] = {}
+function SpatialHash:getCell(x, y)
+    local key = self:getKey(x, y)
+
+    if self.cells[key] == nil then 
+        self.cells[key] = {}
     end
 
-    if self.cells[i][j] == nil then
-        self.cells[i][j] = {}
-    end
-
-    return self.cells[i][j]
+    return self.cells[key]
 end
 
-function SpatialHash:getCellAt(x, y)
-    return self:getCell(self:cellCoords(x, y))
+function SpatialHash.__tostring(a)
+    local cellAmount = 0
+    local dynamic = 0
+    local static = 0
+
+    for k1, cell in pairs(a.cells) do
+        cellAmount = cellAmount + 1
+
+        for k2, entity in pairs(cell) do
+            if entity.static then 
+                static = static + 1 
+            else
+                dynamic = dynamic + 1
+            end
+        end
+    end
+
+    return string.format("SpatialHash: %d cells, %d static, %d dynamic", cellAmount, static, dynamic)
 end
