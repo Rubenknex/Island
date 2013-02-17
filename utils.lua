@@ -185,9 +185,12 @@ function utils.arrayToImage(array, name)
     imgData:encode(name .. ".png")
 end
 
-function utils.debugPrint(r, g, b, a, text, x, y)
+function utils.debugPrint(text, x, y)
     if debug then
-        love.graphics.setColor(r, g, b, a)
+        love.graphics.setColor(0, 0, 0)
+        love.graphics.print(text, x + 1, y + 1)
+
+        love.graphics.setColor(255, 255, 255)
         love.graphics.print(text, x, y)
     end
 end

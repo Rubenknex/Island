@@ -64,9 +64,10 @@ function Game:draw()
 
     self:drawUI()
 
-    utils.debugPrint(255, 255, 255, 255, "FPS: " .. love.timer.getFPS(), 0, 0)
-    utils.debugPrint(255, 255, 255, 255, "Player: " .. tostring(player.position), 0, 15)
-    utils.debugPrint(255, 255, 255, 255, tostring(self.spatialhash), 0, 30)
+    utils.debugPrint("FPS: " .. love.timer.getFPS(), 0, 0)
+    utils.debugPrint("Player: " .. tostring(player.position), 0, 15)
+    utils.debugPrint(tostring(self.spatialhash), 0, 30)
+    utils.debugPrint("Collision checks: " .. self.checks, 0, 45)
 end
 
 function Game:placeEntities()
@@ -120,32 +121,35 @@ function Game:resolveMapCollision(x, y, entity)
         local result, resolve = utils.collideRectCircle(map:rectAt(x, y), entity:getCollisionCircle())
 
         if result then
-            entity.collided = true
             entity.position = entity.position + resolve
         end
     end
 end
 
 function Game:handleEntityCollisions()
+    self.checks = 0
+
     for k1, a in pairs(entities) do
         local nearby = self.spatialhash:getNearby(a)
 
-        for k2, b in pairs(nearby) do
-            if k1 ~= k2 and not (a.static and b.static) then
-                local collision, resolve = utils.collideCircleCircle(a:getCollisionCircle(), b:getCollisionCircle())
+        if a.collidable and not a.static then
+            for k2, b in pairs(nearby) do
+                if k1 ~= k2 then
+                    local collision, resolve = utils.collideCircleCircle(a:getCollisionCircle(), b:getCollisionCircle())
 
-                if collision then
-                    if a.static then
-                        b.position = b.position + resolve
-                    elseif b.static then
-                        a.position = a.position - resolve
-                    else
-                        a.position = a.position - resolve / 2
-                        b.position = b.position + resolve / 2
+                    if collision then
+                        if b.static then
+                            a.position = a.position - resolve
+                        else
+                            a.position = a.position - resolve / 2
+                            b.position = b.position + resolve / 2
+                        end
+
+                        if a.collidedWith then a:collidedWith(b) end
+                        if b.collidedWith then b:collidedWith(a) end
                     end
 
-                    if a.collidedWith then a:collidedWith(b) end
-                    if b.collidedWith then b:collidedWith(a) end
+                    self.checks = self.checks + 1
                 end
             end
         end
