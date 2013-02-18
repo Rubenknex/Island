@@ -48,7 +48,7 @@ function Map:draw()
                 local tile = self.tiles[x + 1][y + 1]
 
                 love.graphics.setColor(tile.color:toRGB())
-                love.graphics.drawq(self.tileset, self.quads[tile.index][1], posX, posY, 0, 2)
+                love.graphics.drawq(self.tileset, self.quads[tile.index][1], posX, posY, 0, tileDrawSize / tileSize)
 
                 if tile.transition > 0 then
                     love.graphics.setColor(tileTypes[tile.index + 1].startColor:toRGB())
@@ -108,7 +108,26 @@ function Map:generate(width, height)
         end
     end
 
-    -- Calculate which transition tiles must be placed where using bitwise counting.
+    self:generateTileTransitions()
+    self.minimap = self:generateMinimap()
+    self:placeDecals()
+end
+
+function Map:generateIslandMask(width, height, size)
+    local mask = {}
+    for x=1, width do
+        mask[x] = {}
+        for y=1, height do
+            local distanceToCenter = math.sqrt((width / 2 - x) ^ 2 + (height / 2 - y) ^ 2) - size
+            local normalized = utils.normalize(distanceToCenter, width / 2, 0)
+            mask[x][y] = utils.smootherstep(utils.clamp(normalized, 0, 1))
+        end
+    end
+
+    return mask
+end
+
+function Map:generateTileTransitions()
     -- http://www.saltgames.com/2010/a-bitwise-method-for-applying-tilemaps/
     for x=1, self.width do
         for y=1, self.height do
@@ -127,24 +146,6 @@ function Map:generate(width, height)
             self.tiles[x][y].transition = transition
         end
     end
-
-    self.minimap = self:generateMinimap()
-
-    self:placeDecals()
-end
-
-function Map:generateIslandMask(width, height, size)
-    local mask = {}
-    for x=1, width do
-        mask[x] = {}
-        for y=1, height do
-            local distanceToCenter = math.sqrt((width / 2 - x) ^ 2 + (height / 2 - y) ^ 2) - size
-            local normalized = utils.normalize(distanceToCenter, width / 2, 0)
-            mask[x][y] = utils.smootherstep(utils.clamp(normalized, 0, 1))
-        end
-    end
-
-    return mask
 end
 
 function Map:generateMinimap()

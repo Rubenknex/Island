@@ -9,12 +9,56 @@ require "spatialhash"
 require "utils"
 require "vec2"
 
+--[[
+Item:
+- Name
+- Description
+- Amount
+]]
+
+Inventory = class()
+
+function Inventory:init()
+    self.items = {}
+end
+
+function Inventory:draw()
+
+end
+
+function Inventory:addItem(newItem)
+    local item = self.items[newItem.name]
+
+    if item == nil then
+        self.items[newItem.name] = newItem
+    else
+        item.amount = item.amount + 1
+    end
+end
+
+function Inventory:removeItem(name, amount)
+    local item = self.items[name]
+
+    if item ~= nil then
+        if item.amount > 1 then
+            self.items[name] = nil
+        else
+            item.amount = item.amount - 1
+        end
+    end
+end
+
+function Inventory:hasItem(name)
+    return self.items[name] ~= nil
+end
+
 Game = class()
 
 function Game:init()
-    camera = Camera()
     map = Map(128, 128)
     player = Player()
+    camera = Camera()
+    camera:moveTo(player.position)
 
     self.spatialhash = SpatialHash(10 * tileDrawSize)
     entities = {}
@@ -28,8 +72,6 @@ function Game:init()
 end
 
 function Game:update(dt)
-    camera:moveToSmooth(player.position, 3, dt)
-
     map:update(dt)
 
     self.spatialhash:clear()
@@ -44,6 +86,8 @@ function Game:update(dt)
 
     self:handleMapCollisions()
     self:handleEntityCollisions()
+
+    camera:moveToSmooth(player.position, 3, dt)
 end
 
 function Game:draw()
@@ -64,8 +108,6 @@ function Game:draw()
     utils.debugPrint("Player: " .. tostring(player.position), 0, 15)
     utils.debugPrint(tostring(self.spatialhash), 0, 30)
     utils.debugPrint("Collision checks: " .. self.checks, 0, 45)
-    utils.debugPrint("Camera: " .. camera.x .. "," .. camera.y, 0, 60)
-    utils.debugPrint((player.position.x - camera.x), 0, 75)
 end
 
 function Game:placeEntities()

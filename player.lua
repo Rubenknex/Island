@@ -8,7 +8,7 @@ Player = class()
 function Player:init()
     self.position = Vec2(0, 0)
     while map:tileAt(self.position.x, self.position.y).type == "water" do
-        self.position = Vec2((math.random(map.width) + 0.5) * tileDrawSize, (math.random(map.height) + 0.5) * tileDrawSize)
+        self.position = Vec2((math.random(map.width - 1) + 0.5) * tileDrawSize, (math.random(map.height - 1) + 0.5) * tileDrawSize)
     end
     self.velocity = Vec2(0, 0)
     self.collidable = true
