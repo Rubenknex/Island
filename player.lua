@@ -1,4 +1,5 @@
 require "animation"
+require "inventory"
 require "map"
 require "shapes"
 require "utils"
@@ -6,14 +7,16 @@ require "utils"
 Player = class()
 
 function Player:init()
-    self.position = Vec2(0, 0)
+    self.position = Vec2()
     while map:tileAt(self.position.x, self.position.y).type == "water" do
         self.position = Vec2((math.random(map.width - 1) + 0.5) * tileDrawSize, (math.random(map.height - 1) + 0.5) * tileDrawSize)
     end
-    self.velocity = Vec2(0, 0)
+    self.velocity = Vec2()
     self.collidable = true
     self.static = false
     self.radius = 7
+
+    self.inventory = Inventory()
 
     self.animation = Animation(love.graphics.newImage("images/man.png"))
     self.animation:addSequence("down", 0, 0, 16, 16, 1)

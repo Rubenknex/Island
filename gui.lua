@@ -1,32 +1,24 @@
 require "color"
 require "shapes"
 
-Button = class()
+GUI = {}
+GUI.mouseDown = false
 
-function Button:init(x, y, width, height)
-    self.rect = Rect(x, y, width, height)
-    self.color = nil
-    self.text = nil
-    self.image = nil
+function GUI.button(rect, text)
+    love.graphics.setColor(255, 255, 255)
+    love.graphics.rectangle("fill", rect:getValues())
+    love.graphics.setColor(0, 0, 0)
+    love.graphics.printf(text, rect.left, rect.top, rect.width, "center")
 
-    self.onHover = nil
-    self.onClick = nil
-end
+    if rect:contains(love.mouse.getX(), love.mouse.getY()) then
+        if love.mouse.isDown("l") then
+            GUI.mouseDown = true
+        elseif GUI.mouseDown then
+            GUI.mouseDown = false
 
-function Button:update(dt)
-    if self.onHover ~= nil and self.rect:contains(love.mouse.getX(), love.mouse.getY()) then
-        self.onHover()
-    end
-end
-
-function Button:draw()
-    if self.color ~= nil then
-        love.graphics.setColor(self.color:toRGB())
-        love.graphics.rectangle("fill", self.rect.left, self.rect.top, self.rect.width, self.rect.height)
+            return true
+        end
     end
 
-    if self.text ~= nil then
-        love.graphics.setColor(0, 0, 0)
-        love.graphics.print(self.text, self.rect.left, self.rect.top)
-    end
+    return false
 end

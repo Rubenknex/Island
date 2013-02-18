@@ -9,49 +9,6 @@ require "spatialhash"
 require "utils"
 require "vec2"
 
---[[
-Item:
-- Name
-- Description
-- Amount
-]]
-
-Inventory = class()
-
-function Inventory:init()
-    self.items = {}
-end
-
-function Inventory:draw()
-
-end
-
-function Inventory:addItem(newItem)
-    local item = self.items[newItem.name]
-
-    if item == nil then
-        self.items[newItem.name] = newItem
-    else
-        item.amount = item.amount + 1
-    end
-end
-
-function Inventory:removeItem(name, amount)
-    local item = self.items[name]
-
-    if item ~= nil then
-        if item.amount > 1 then
-            self.items[name] = nil
-        else
-            item.amount = item.amount - 1
-        end
-    end
-end
-
-function Inventory:hasItem(name)
-    return self.items[name] ~= nil
-end
-
 Game = class()
 
 function Game:init()
@@ -64,16 +21,9 @@ function Game:init()
     entities = {}
     table.insert(entities, player)
     self:placeEntities()
-
-    self.mapButton = Button(640 - 35, 480 - 35, 30, 30)
-    self.mapButton.color = Color(255, 255, 255)
-    self.mapButton.text = "Map"
-    self.mapButton.onHover = Game.drawMinimap
 end
 
 function Game:update(dt)
-    map:update(dt)
-
     self.spatialhash:clear()
 
     for k, v in pairs(entities) do
@@ -102,7 +52,7 @@ function Game:draw()
     end
     camera:unset()
 
-    self:drawUI()
+    self:onGUI()
 
     utils.debugPrint("FPS: " .. love.timer.getFPS(), 0, 0)
     utils.debugPrint("Player: " .. tostring(player.position), 0, 15)
@@ -112,7 +62,7 @@ end
 
 function Game:placeEntities()
     for i=1, 10 do
-        local position = Vec2(0, 0)
+        local position = Vec2()
         while map:tileAt(position.x, position.y).type ~= "sand" do
             position = Vec2((math.random(map.width - 1) + 0.5) * tileDrawSize, (math.random(map.height - 1) + 0.5) * tileDrawSize)
         end
@@ -196,14 +146,18 @@ function Game:handleEntityCollisions()
     end
 end
 
-function Game:drawUI()
+function Game:onGUI()
     -- Bottom bar
     love.graphics.setColor(135, 72, 0)
     love.graphics.rectangle("fill", 0, 480 - 40, 640, 40)
 
-    -- Map button
-    self.mapButton:update()
-    self.mapButton:draw()
+    if GUI.button(Rect(0, 0, 75, 75), "Map") then
+        self:drawMinimap()
+    end
+
+    if GUI.button(Rect(100, 0, 75, 75), "Map") then
+        self:drawMinimap()
+    end
 end
 
 function Game:drawMinimap()

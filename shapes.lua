@@ -19,6 +19,10 @@ function Rect:contains(x, y)
     return x >= self.left and x <= self.right and y >= self.top and y <= self.bottom
 end
 
+function Rect:getValues()
+    return self.left, self.top, self.width, self.height
+end
+
 function Rect.__tostring(a)
     return "Rect(" .. a.left .. "," .. a.right .. "," .. a.width .. "," .. a.height .. ")"
 end

@@ -25,10 +25,6 @@ function Map:init(width, height)
     self:generate(width, height)
 end
 
-function Map:update(dt)
-    
-end
-
 function Map:draw()
     local bounds = camera:getBounds()
     local startX = math.floor(bounds.left / tileDrawSize)
