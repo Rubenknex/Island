@@ -79,7 +79,21 @@ function Game:placeEntities()
             local tile = map:tileAt(point.x, point.y)
 
             if tile and tile.type == "grass" then
-                table.insert(entities, Tree("palmtree", point.x, point.y))
+                table.insert(entities, Entity("palm", point.x, point.y))
+            end
+        end
+    end
+
+    for x=1, map.width do
+        for y=1, map.height do
+            local s = 128
+            local p = 0.4
+            local point = Vec2(x * s + utils.random(-p, p) * s, y * s + utils.random(-p, p) * s)
+
+            local tile = map:tileAt(point.x, point.y)
+
+            if tile and tile.type == "grass" then
+                table.insert(entities, Entity("grass", point.x, point.y))
             end
         end
     end
@@ -90,13 +104,13 @@ function Game:handleMapCollisions()
         if e.collidable and not e.static then
             e.collided = false
 
-            local circle = e:getCollisionCircle()
-            left = circle.x - circle.radius
-            middleX = circle.x
-            right = circle.x + circle.radius
-            top = circle.y - circle.radius
-            middleY = circle.y
-            bottom = circle.y + circle.radius
+            local circle = e:getCircle()
+            local left = circle.x - circle.radius
+            local middleX = circle.x
+            local right = circle.x + circle.radius
+            local top = circle.y - circle.radius
+            local middleY = circle.y
+            local bottom = circle.y + circle.radius
 
             self:resolveMapCollision(left,   middleY, e)
             self:resolveMapCollision(right,  middleY, e)
@@ -108,7 +122,7 @@ end
 
 function Game:resolveMapCollision(x, y, entity)
     if map:tileAt(x, y).type == "water" then
-        local result, resolve = utils.collideRectCircle(map:rectAt(x, y), entity:getCollisionCircle())
+        local result, resolve = utils.collideRectCircle(map:rectAt(x, y), entity:getCircle())
 
         if result then
             entity.position = entity.position + resolve
@@ -125,7 +139,7 @@ function Game:handleEntityCollisions()
         if a.collidable and not a.static then
             for k2, b in pairs(nearby) do
                 if k1 ~= k2 then
-                    local collision, resolve = utils.collideCircleCircle(a:getCollisionCircle(), b:getCollisionCircle())
+                    local collision, resolve = utils.collideCircleCircle(a:getCircle(), b:getCircle())
 
                     if collision then
                         if b.static then
@@ -147,15 +161,14 @@ function Game:handleEntityCollisions()
 end
 
 function Game:onGUI()
-    -- Bottom bar
     love.graphics.setColor(135, 72, 0)
     love.graphics.rectangle("fill", 0, 480 - 40, 640, 40)
 
-    if GUI.button(Rect(0, 0, 75, 75), "Map") then
-        self:drawMinimap()
+    if GUI.button("hover", Rect(640 - 65, 480 - 35, 60, 30), "Inventory") then
+        player.inventory:draw(640 - 155, 480 - 295)
     end
 
-    if GUI.button(Rect(100, 0, 75, 75), "Map") then
+    if GUI.button("hover", Rect(640 - 130, 480 - 35, 60, 30), "Map") then
         self:drawMinimap()
     end
 end

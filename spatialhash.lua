@@ -14,15 +14,11 @@ function SpatialHash:clear()
 end
 
 function SpatialHash:insert(entity)
-    local circle = entity:getCollisionCircle()
-
-    table.insert(self:getCell(circle.x, circle.y), entity)
+    table.insert(self:getCell(entity.position.x, entity.position.y), entity)
 end
 
 function SpatialHash:getNearby(entity)
-    local circle = entity:getCollisionCircle()
-
-    return self:getCell(circle.x, circle.y)
+    return self:getCell(entity.position.x, entity.position.y)
 end
 
 function SpatialHash:getKey(x, y)

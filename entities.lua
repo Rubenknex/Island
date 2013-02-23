@@ -1,34 +1,40 @@
 require "animation"
 require "map"
 
-Tree = class()
+Entity = class()
 
-function Tree:init(treeType, x, y)
+function Entity:init(type, x ,y)
+    local data = objectTypes[type]
+
+    self.type = type
+    self.image = love.graphics.newImage("images/" .. type .. ".png")
     self.position = Vec2(x, y)
-    self.collidable = true
+    self.origin = Vec2(data.origin_x, data.origin_y)
     self.static = true
-
-    self.treeType = treeType
-    self.image = love.graphics.newImage("images/" .. treeType .. ".png")
-    self.visibility = Rect(0, 0, self.image:getWidth(), self.image:getHeight())
+    if data.static ~= nil then self.static = data.static end
+    self.collidable = true
+    if data.collidable ~= nil then self.collidable = data.collidable end
+    self.circle = Circle(0, 0, data.radius or 0)
+    self.rect = Rect(0, 0, self.image:getWidth(), self.image:getHeight())
 end
 
-function Tree:draw()
+function Entity:draw()
     love.graphics.setColor(255, 255, 255, 255)
-    love.graphics.draw(self.image, self.position.x, self.position.y, 0, 2, 2, self.image:getWidth() / 2, self.image:getHeight())
+    love.graphics.draw(self.image, self.position.x, self.position.y, 0, 2, 2, self.origin.x, self.origin.y)
 
-    utils.debugDrawCircle(255, 0, 0, 255, self:getCollisionCircle())
+    utils.debugDrawCircle(0, 255, 0, 255, self:getCircle())
 end
 
-function Tree:getCollisionCircle()
-    return Circle(self.position.x, self.position.y, 8)
+function Entity:getCircle()
+    self.circle:set(self.position)
+
+    return self.circle
 end
 
-function Tree:getVisibilityRect()
-    self.visibility.left = self.position.x
-    self.visibility.top = self.position.y
+function Entity:getRect()
+    self.rect:set(self.position - self.origin)
 
-    return self.visibility
+    return self.rect
 end
 
 Crab = class()
@@ -41,6 +47,7 @@ function Crab:init(x, y)
     self.collided = false
 
     self.boundingCircle = Circle(x, y, 6)
+    self.visibilityRect = Rect(x, y, 12, 12)
 
     self.direction = Vec2()
     self.degrees = 0
@@ -88,7 +95,7 @@ function Crab:draw()
 
     love.graphics.drawq(self.animation.image, self.animation:getCurrentQuad(), self.position.x, self.position.y, 0, 2, 2, 8, 8)
 
-    utils.debugDrawCircle(255, 0, 0, 255, self:getCollisionCircle())
+    utils.debugDrawCircle(255, 0, 0, 255, self:getCircle())
 end
 
 function Crab:chooseTarget()
@@ -107,13 +114,18 @@ function Crab:chooseTarget()
     self.walkTime = distance / crabSpeed
 end
 
-function Crab:getCollisionCircle()
-    self.boundingCircle.x = self.position.x
-    self.boundingCircle.y = self.position.y
+function Crab:getCircle()
+    self.boundingCircle:set(self.position.x, self.position.y)
 
     return self.boundingCircle
 end
 
 function Crab:collidedWith(other)
     self.collided = true
+end
+
+function Crab:getRect()
+    self.visibilityRect:set(self.position.x - 6, self.position.y - 6)
+
+    return self.visibilityRect
 end

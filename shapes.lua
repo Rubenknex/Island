@@ -1,9 +1,22 @@
 Rect = class()
 
 function Rect:init(left, top, width, height)
-    self.left, self.top = left, top
-    self.right, self.bottom = left + width, top + height
-    self.width, self.height = width, height
+    self.left = left
+    self.top = top
+    self.right = left + width
+    self.bottom = top + height
+    self.width = width
+    self.height = height
+end
+
+function Rect:set(left, top)
+    if not top then
+        top = left.x
+        left = left.y
+    end
+
+    self.left = left or self.left
+    self.top = top or self.top
 end
 
 function Rect:intersects(other)
@@ -16,6 +29,11 @@ function Rect:intersects(other)
 end
 
 function Rect:contains(x, y)
+    if not y then
+        y = x.y
+        x = x.x
+    end
+
     return x >= self.left and x <= self.right and y >= self.top and y <= self.bottom
 end
 
@@ -32,6 +50,16 @@ Circle = class()
 function Circle:init(x, y, radius)
     self.x, self.y = x, y
     self.radius = radius
+end
+
+function Circle:set(x, y)
+    if not y then
+        y = x.y
+        x = x.x
+    end
+    
+    self.x = x or self.x
+    self.y = y or self.y
 end
 
 function Circle:intersect(other)

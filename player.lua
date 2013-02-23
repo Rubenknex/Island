@@ -11,10 +11,11 @@ function Player:init()
     while map:tileAt(self.position.x, self.position.y).type == "water" do
         self.position = Vec2((math.random(map.width - 1) + 0.5) * tileDrawSize, (math.random(map.height - 1) + 0.5) * tileDrawSize)
     end
+    self.offset = Vec2(8, 16)
     self.velocity = Vec2()
     self.collidable = true
     self.static = false
-    self.radius = 7
+    self.boundingCircle = Circle(0, 0, 7)
 
     self.inventory = Inventory()
 
@@ -24,6 +25,8 @@ function Player:init()
     self.animation:addSequence("left", 32, 0, 16, 16, 1)
     self.animation:addSequence("right", 48, 0, 16, 16, 1)
     self.animation:playSequence("down", "paused", 1)
+
+    self.boundingRect = Rect(0, 0, self.animation.image:getWidth(), self.animation.image:getHeight())
 end
 
 function Player:update(dt)
@@ -32,9 +35,9 @@ end
 
 function Player:draw()
     love.graphics.setColor(255, 255, 255, 255)
-    love.graphics.drawq(self.animation.image, self.animation:getCurrentQuad(), self.position.x, self.position.y, 0, 3, 3, 8, 16)
+    love.graphics.drawq(self.animation.image, self.animation:getCurrentQuad(), self.position.x, self.position.y, 0, 3, 3, self.offset.x, self.offset.y)
     
-    utils.debugDrawCircle(255, 0, 0, 255, self:getCollisionCircle())
+    utils.debugDrawCircle(255, 0, 0, 255, self:getCircle())
 end
 
 function Player:handleInput(dt)
@@ -66,6 +69,18 @@ function Player:handleInput(dt)
     end
 end
 
-function Player:getCollisionCircle()
-    return Circle(self.position.x, self.position.y - 6, self.radius)
+function Player:collideWith(other)
+
+end
+
+function Player:getCircle()
+    self.boundingCircle:set(self.position.x, self.position.y - 6)
+
+    return self.boundingCircle
+end
+
+function Player:getRect()
+    self.boundingRect:set(self.position + self.offset)
+
+    return self.boundingRect
 end
