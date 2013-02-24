@@ -1,4 +1,4 @@
-require "perlin"
+require "noise"
 require "vec2"
 
 utils = {}
@@ -68,7 +68,7 @@ function utils.collideCircleCircle(a, b)
 end
 
 function utils.noiseMap(width, height, frequency, amplitude, persistence, octaves, seed)
-    perlin.seed(seed)
+    noise.seed(seed)
 
     local data = {}
     local min, max = math.huge, -math.huge
@@ -86,7 +86,7 @@ function utils.noiseMap(width, height, frequency, amplitude, persistence, octave
             local amplitude = startAmplitude
 
             for octave=1, octaves do
-                total = total + perlin.noise((x * period) * frequency, (y * period) * frequency) * amplitude
+                total = total + noise.simplex((x * period) * frequency, (y * period) * frequency) * amplitude
 
                 frequency = frequency * 2
                 amplitude = amplitude * persistence
