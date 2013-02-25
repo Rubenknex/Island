@@ -1,4 +1,3 @@
-require "color"
 require "shapes"
 
 GUI = {}

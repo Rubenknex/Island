@@ -3,6 +3,10 @@ require "vec2"
 
 utils = {}
 
+function utils.gaussian(x, y, sigma)
+    return math.exp(-(x * x + y * y) / (2 * sigma * sigma)) / (sigma * math.sqrt(2 * math.pi))
+end
+
 function utils.random(min, max)
     return math.random() * (max - min)
 end

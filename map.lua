@@ -50,32 +50,29 @@ function Map:draw()
                     love.graphics.setColor(tileTypes[tile.index + 1].startColor:toRGB())
                     love.graphics.drawq(self.tileset, self.quads[tile.index + 1][tile.transition + 1], posX, posY, 0, 2)
                 end
-
-                if tile.decal ~= nil then
-                    love.graphics.setColor(255, 255, 255)
-                    love.graphics.drawq(self.decals, self.decalQuads[tile.decal], posX, posY, 0, 2)
-                end
             end
         end
     end
 end
 
 function Map:generate(width, height)
+    local t = love.timer.getMicroTime()
     local data = utils.noiseMap(width, height, mapFrequency, mapAmplitude, mapPersistence, mapOctaves, os.time())
-    --utils.arrayToImage(data, "1 - Noise")
+    print("Simplex:", love.timer.getMicroTime() - t)
+    utils.arrayToImage(data, "1 - Noise")
 
-    local islandMask = self:generateIslandMask(width, height, mapPadding)
-    --utils.arrayToImage(islandMask, "2 - Mask")
+    local islandMask = self:generateIslandMask(width, height)
+    utils.arrayToImage(islandMask, "2 - Mask")
 
     for x=1, width do
         for y=1, height do
             data[x][y] = data[x][y] * islandMask[x][y]
         end
     end
-    --utils.arrayToImage(data, "3 - Masked")
+    utils.arrayToImage(data, "3 - Masked")
 
     data = utils.smoothenHeightMap(data, mapSmoothingPasses)
-    --utils.arrayToImage(data, "4 - Smoothened")
+    utils.arrayToImage(data, "4 - Smoothened")
 
     self.tiles = {}
     for x=1, width do
@@ -106,17 +103,15 @@ function Map:generate(width, height)
 
     self:generateTileTransitions()
     self.minimap = self:generateMinimap()
-    self:placeDecals()
 end
 
-function Map:generateIslandMask(width, height, size)
+function Map:generateIslandMask(width, height)
     local mask = {}
     for x=1, width do
         mask[x] = {}
         for y=1, height do
-            local distanceToCenter = math.sqrt((width / 2 - x) ^ 2 + (height / 2 - y) ^ 2) - size
-            local normalized = utils.normalize(distanceToCenter, width / 2, 0)
-            mask[x][y] = utils.smootherstep(utils.clamp(normalized, 0, 1))
+            local value = utils.gaussian((x - width / 2) / (width / 1.3), (y - height / 2) / (height / 1.3), 0.3)
+            mask[x][y] = utils.clamp(value, 0.0, 1.0)
         end
     end
 
@@ -155,13 +150,11 @@ function Map:generateMinimap()
     return love.graphics.newImage(minimapData)
 end
 
-function Map:placeDecals()
-    for x=1, self.width do
-        for y=1, self.height do
-            if self.tiles[x][y].type == "sand" and math.random(100) < 3 then
-                self.tiles[x][y].decal = math.random(1, 3)
-            end
-        end
+function Map:tileAtIndex(x, y)
+    if x >= 0 and x < self.width and y >= 0 and y < self.height then
+        return self.tiles[x + 1][y + 1]
+    else
+        return nil
     end
 end
 
@@ -169,11 +162,7 @@ function Map:tileAt(x, y)
     tileX = math.floor(x / tileDrawSize)
     tileY = math.floor(y / tileDrawSize)
 
-    if tileX >= 0 and tileX < self.width and tileY >= 0 and tileY < self.height then
-        return self.tiles[tileX + 1][tileY + 1]
-    else
-        return nil
-    end
+    return self:tileAtIndex(tileX, tileY)
 end
 
 function Map:rectAt(x, y)

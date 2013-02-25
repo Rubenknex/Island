@@ -1,6 +1,21 @@
 require "color"
 
 objectTypes={
+    starfish={
+        origin_x=8,
+        origin_y=8,
+        collidable=false,
+    },
+    shell={
+        origin_x=8,
+        origin_y=8,
+        collidable=false,
+    },
+    stone={
+        origin_x=8,
+        origin_y=8,
+        collidable=false,
+    },
 	grass={
 		origin_x=8,
 		origin_y=16,
@@ -17,12 +32,11 @@ objectTypes={
 tileSize = 16
 tileDrawSize = 32
 
-mapFrequency = 3
-mapAmplitude = 1
-mapPersistence = 0.6
-mapOctaves = 6
-mapPadding = 15
-mapSmoothingPasses = 5
+mapFrequency = 2.5
+mapAmplitude = 8
+mapPersistence = 0.45
+mapOctaves = 4
+mapSmoothingPasses = 3
 
 tileTypes = {
     {type="water", limit=0.35, startColor=Color.fromHSL(218, 75, 35), endColor=Color.fromHSL(218, 75, 55)},

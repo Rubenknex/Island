@@ -92,8 +92,9 @@ function Game:placeEntities()
 
             local tile = map:tileAt(point.x, point.y)
 
-            if tile and tile.type == "grass" then
-                table.insert(entities, Entity("grass", point.x, point.y))
+            if tile and tile.type == "sand" then
+                local choices = {"starfish", "stone", "shell"}
+                table.insert(entities, Entity(choices[math.random(1, 3)], point.x, point.y))
             end
         end
     end
