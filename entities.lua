@@ -14,8 +14,7 @@ function Entity:init(type, x ,y)
     if data.static ~= nil then self.static = data.static end
     self.collidable = true
     if data.collidable ~= nil then self.collidable = data.collidable end
-    self.circle = Circle(0, 0, data.radius or 0)
-    self.rect = Rect(0, 0, self.image:getWidth(), self.image:getHeight())
+    self.radius = data.radius or 0
 end
 
 function Entity:draw()
@@ -26,15 +25,11 @@ function Entity:draw()
 end
 
 function Entity:getCircle()
-    self.circle:set(self.position)
-
-    return self.circle
+    return Circle(self.position.x, self.position.y, self.radius)
 end
 
 function Entity:getRect()
-    self.rect:set(self.position - self.origin)
-
-    return self.rect
+    return Rect(self.position.x, self.position.y, self.image:getWidth(), self.image:getHeight())
 end
 
 Crab = class()
@@ -46,8 +41,8 @@ function Crab:init(x, y)
 
     self.collided = false
 
-    self.boundingCircle = Circle(x, y, 6)
-    self.visibilityRect = Rect(x, y, 12, 12)
+    self.circle = Circle(x, y, 6)
+    self.rect = Rect(x, y, 16, 16)
 
     self.direction = Vec2()
     self.degrees = 0
@@ -56,7 +51,8 @@ function Crab:init(x, y)
     self.walkTime = 0.0
     self.idleTime = 0.0
 
-    self.animation = Animation(love.graphics.newImage("images/crab.png"))
+    self.image = love.graphics.newImage("images/crab.png")
+    self.animation = Animation(self.image)
     self.animation:addSequence("down", 0, 0, 16, 16, 2)
     self.animation:addSequence("up", 0, 16, 16, 16, 2)
     self.animation:addSequence("left", 0, 32, 16, 16, 2)
@@ -102,7 +98,6 @@ function Crab:chooseTarget()
     local degrees = math.random(0, 359)
     local angle = math.rad(degrees)
 
-    -- Set the correct quad facing the target
     if degrees >= 315 or degrees <= 45 then self.animation:playSequence("up", "loop", 0.2)
     elseif degrees >= 45 and degrees <= 135 then self.animation:playSequence("right", "loop", 0.2)
     elseif degrees >= 135 and degrees <= 225 then self.animation:playSequence("down", "loop", 0.2)
@@ -114,18 +109,16 @@ function Crab:chooseTarget()
     self.walkTime = distance / crabSpeed
 end
 
-function Crab:getCircle()
-    self.boundingCircle:set(self.position.x, self.position.y)
-
-    return self.boundingCircle
-end
-
 function Crab:collidedWith(other)
     self.collided = true
 end
 
-function Crab:getRect()
-    self.visibilityRect:set(self.position.x - 6, self.position.y - 6)
+function Crab:getCircle()
+    self.circle:set(self.position)
 
-    return self.visibilityRect
+    return self.circle
+end
+
+function Crab:getRect()
+    return Rect(self.position.x - 8, self.position.y - 8, self.image:getWidth(), self.image:getHeight())
 end

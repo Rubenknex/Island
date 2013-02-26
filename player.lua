@@ -15,18 +15,16 @@ function Player:init()
     self.velocity = Vec2()
     self.collidable = true
     self.static = false
-    self.boundingCircle = Circle(0, 0, 7)
 
     self.inventory = Inventory()
 
-    self.animation = Animation(love.graphics.newImage("images/man.png"))
+    self.image = love.graphics.newImage("images/man.png")
+    self.animation = Animation(self.image)
     self.animation:addSequence("down", 0, 0, 16, 16, 1)
     self.animation:addSequence("up", 16, 0, 16, 16, 1)
     self.animation:addSequence("left", 32, 0, 16, 16, 1)
     self.animation:addSequence("right", 48, 0, 16, 16, 1)
     self.animation:playSequence("down", "paused", 1)
-
-    self.boundingRect = Rect(0, 0, self.animation.image:getWidth(), self.animation.image:getHeight())
 end
 
 function Player:update(dt)
@@ -74,13 +72,9 @@ function Player:collideWith(other)
 end
 
 function Player:getCircle()
-    self.boundingCircle:set(self.position.x, self.position.y - 6)
-
-    return self.boundingCircle
+    return Circle(self.position.x, self.position.y, 7)
 end
 
 function Player:getRect()
-    self.boundingRect:set(self.position + self.offset)
-
-    return self.boundingRect
+    return Rect(self.position.x - self.offset.x, self.position.y - self.offset.y, self.image:getWidth(), self.image:getHeight())
 end
