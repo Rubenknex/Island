@@ -10,9 +10,9 @@ function Rect:init(left, top, width, height)
 end
 
 function Rect:set(left, top)
-    if not top then
-        top = left.x
-        left = left.y
+    if top == nil then
+        top = left.y
+        left = left.x
     end
 
     self.left = left or self.left
@@ -42,7 +42,7 @@ function Rect:getValues()
 end
 
 function Rect.__tostring(a)
-    return "Rect(" .. a.left .. "," .. a.right .. "," .. a.width .. "," .. a.height .. ")"
+    return "Rect(" .. a.left .. "," .. a.top .. "," .. a.width .. "," .. a.height .. ")"
 end
 
 Circle = class()
