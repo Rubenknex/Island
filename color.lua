@@ -32,9 +32,7 @@ function Color.hslToRgb(h, s, l)
 end
 
 function Color.interpolate(a, b, x)
-    return Color(utils.lerp(a.r, b.r, x), 
-                 utils.lerp(a.g, b.g, x), 
-                 utils.lerp(a.b, b.b, x))
+    return Color(utils.lerp(a.r, b.r, x), utils.lerp(a.g, b.g, x), utils.lerp(a.b, b.b, x))
 end
 
 function Color:toRGB()

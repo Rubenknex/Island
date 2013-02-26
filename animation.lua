@@ -10,20 +10,32 @@ function Animation:init(image)
     -- 'paused': Show a single frame
     -- 'once': Complete the animation one time
     -- 'loop': Loop the animation until stopped
-    -- 'bounce': Go through the animation in both directions
     self.mode = nil
     self.interval = 0
     self.timer = 0
+end
+
+function Animation:update(dt)
+    if self.mode == "once" or self.mode == "loop" then
+        self.timer = self.timer + dt
+
+        if self.timer > self.interval then
+            self.timer = 0
+            self.currentFrame = self.currentFrame + 1
+
+            if self.currentFrame > #self.sequences[self.currentSequence] then
+                if self.mode == "once" then self.mode = nil end
+                if self.mode == "loop" then self.currentFrame = 1 end
+            end
+        end
+    end
 end
 
 function Animation:add(name, x, y, frameWidth, frameHeight, length)
     local sequence = {}
 
     for i=1, length do
-        sequence[i] = love.graphics.newQuad(x + frameWidth * (i - 1), 
-                                            y, 
-                                            frameWidth, frameHeight, 
-                                            self.image:getWidth(), self.image:getHeight())
+        sequence[i] = love.graphics.newQuad(x + frameWidth * (i - 1), y, frameWidth, frameHeight, self.image:getWidth(), self.image:getHeight())
     end
 
     self.sequences[name] = sequence
@@ -58,20 +70,4 @@ function Animation:getCurrentQuad()
     end
 
     return nil
-end
-
-function Animation:update(dt)
-    if self.mode == "once" or self.mode == "loop" then
-        self.timer = self.timer + dt
-
-        if self.timer > self.interval then
-            self.timer = 0
-            self.currentFrame = self.currentFrame + 1
-
-            if self.currentFrame > #self.sequences[self.currentSequence] then
-                if self.mode == "once" then self.mode = nil end
-                if self.mode == "loop" then self.currentFrame = 1 end
-            end
-        end
-    end
 end

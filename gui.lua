@@ -6,6 +6,7 @@ GUI.mouseDown = false
 function GUI.button(type, rect, text)
     love.graphics.setColor(255, 255, 255)
     love.graphics.rectangle("fill", rect:getValues())
+    
     love.graphics.setColor(0, 0, 0)
     love.graphics.printf(text, rect.left, rect.top, rect.width, "center")
 
