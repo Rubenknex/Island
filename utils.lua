@@ -34,40 +34,33 @@ function utils.cerp(a, b, x)
     return a * (1 - f) + b * f
 end
 
-function utils.smoothstep(x)
-    return x * x * (3 - 2 * x)
-end
-
-function utils.smootherstep(x)
-    return x * x * x * (x * (x * 6 - 15) + 10)
-end
-
 function utils.collideRectCircle(rect, circle)
     local closest = Vec2(utils.clamp(circle.x, rect.left, rect.right), 
-                        utils.clamp(circle.y, rect.top, rect.bottom))
+                         utils.clamp(circle.y, rect.top, rect.bottom))
 
     local distanceVec = Vec2(circle.x, circle.y) - closest
     local distance = distanceVec:length()
 
     if distance < circle.radius and distance ~= 0 then
         local resolve = distanceVec:normalized() * (circle.radius - distance)
+
         return true, resolve
     else
-        return false, nil
+        return false
     end
 end
 
 function utils.collideCircleCircle(a, b)
-    local distanceVec = Vec2(b.x, b.y) - Vec2(a.x, a.y)
-    local distance = distanceVec:length()
+    local difference = Vec2(b.x - a.x, b.y - a.y)
+    local totalRadius = a.radius + b.radius
 
-    if distance < a.radius + b.radius and distance ~= 0 then
-        local overlap = (a.radius + b.radius) - distance
-        local resolve = distanceVec:normalized() * overlap
+    if difference:lengthSquared() < totalRadius ^ 2 then
+        local overlap = totalRadius - difference:length()
+        local resolve = difference:normalized() * overlap
 
         return true, resolve
     else
-        return false, nil
+        return false
     end
 end
 

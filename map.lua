@@ -15,13 +15,7 @@ function Map:init(width, height)
             self.quads[y + 1][x + 1] = love.graphics.newQuad(x * 16, y * 16, 16, 16, self.tileset:getWidth(), self.tileset:getHeight())
         end
     end
-
-    self.decals = love.graphics.newImage("images/decals.png")
-    self.decalQuads = {}
-    for x=0, 2 do
-        self.decalQuads[x + 1] = love.graphics.newQuad(x * tileSize, 0, tileSize, tileSize, self.decals:getWidth(), self.decals:getHeight())
-    end
-
+    
     self:generate(width, height)
 end
 
@@ -34,11 +28,11 @@ function Map:draw()
 
     for x=startX, endX do
         local posX = x * tileDrawSize
-        utils.debugDrawLine(255, 0, 0, 255, posX, startY * tileDrawSize, posX, endY * tileDrawSize)
+        utils.debugDrawLine(255, 0, 0, 128, posX, startY * tileDrawSize, posX, endY * tileDrawSize)
 
         for y=startY, endY do
             local posY = y * tileDrawSize
-            utils.debugDrawLine(255, 0, 0, 255, startX * tileDrawSize, posY, endX * tileDrawSize, posY)
+            utils.debugDrawLine(255, 0, 0, 128, startX * tileDrawSize, posY, endX * tileDrawSize, posY)
 
             if x >= 0 and y >= 0 and x < self.width and y < self.height then
                 local tile = self.tiles[x + 1][y + 1]
@@ -56,9 +50,7 @@ function Map:draw()
 end
 
 function Map:generate(width, height)
-    local t = love.timer.getMicroTime()
     local data = utils.noiseMap(width, height, mapFrequency, mapAmplitude, mapPersistence, mapOctaves, os.time())
-    print("Simplex:", love.timer.getMicroTime() - t)
     utils.arrayToImage(data, "1 - Noise")
 
     local islandMask = self:generateIslandMask(width, height)
