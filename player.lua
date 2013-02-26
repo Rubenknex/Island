@@ -20,11 +20,11 @@ function Player:init()
 
     self.image = love.graphics.newImage("images/man.png")
     self.animation = Animation(self.image)
-    self.animation:addSequence("down", 0, 0, 16, 16, 1)
-    self.animation:addSequence("up", 16, 0, 16, 16, 1)
-    self.animation:addSequence("left", 32, 0, 16, 16, 1)
-    self.animation:addSequence("right", 48, 0, 16, 16, 1)
-    self.animation:playSequence("down", "paused", 1)
+    self.animation:add("down", 0, 0, 16, 16, 1)
+    self.animation:add("up", 16, 0, 16, 16, 1)
+    self.animation:add("left", 32, 0, 16, 16, 1)
+    self.animation:add("right", 48, 0, 16, 16, 1)
+    self.animation:play("down", "paused", 1)
 end
 
 function Player:update(dt)
@@ -43,19 +43,19 @@ function Player:handleInput(dt)
 
     if love.keyboard.isDown("a") then
         dir.x = -1
-        self.animation:playSequence("left", "paused", 1)
+        self.animation:play("left", "paused", 1)
     end
     if love.keyboard.isDown("d") then
         dir.x = dir.x + 1
-        self.animation:playSequence("right", "paused", 1)
+        self.animation:play("right", "paused", 1)
     end
     if love.keyboard.isDown("w") then
         dir.y = -1
-        self.animation:playSequence("up", "paused", 1)
+        self.animation:play("up", "paused", 1)
     end
     if love.keyboard.isDown("s") then
         dir.y = dir.y + 1
-        self.animation:playSequence("down", "paused", 1)
+        self.animation:play("down", "paused", 1)
     end
 
     if dir:length() > 0 then
@@ -63,7 +63,7 @@ function Player:handleInput(dt)
         self.velocity = dir:normalized() * speed * dt
         self.position = self.position + self.velocity
     else
-        self.animation:pauseSequence(1)
+        self.animation:pause(1)
     end
 end
 

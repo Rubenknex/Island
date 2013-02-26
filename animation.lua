@@ -16,7 +16,7 @@ function Animation:init(image)
     self.timer = 0
 end
 
-function Animation:addSequence(name, x, y, frameWidth, frameHeight, length)
+function Animation:add(name, x, y, frameWidth, frameHeight, length)
     local sequence = {}
 
     for i=1, length do
@@ -29,7 +29,7 @@ function Animation:addSequence(name, x, y, frameWidth, frameHeight, length)
     self.sequences[name] = sequence
 end
 
-function Animation:playSequence(name, mode, interval)
+function Animation:play(name, mode, interval)
     if self.sequences[name] == nil then
         do return end
     end
@@ -41,14 +41,14 @@ function Animation:playSequence(name, mode, interval)
     self.timer = 0
 end
 
-function Animation:pauseSequence(frame)
+function Animation:pause(frame)
     if self.mode ~= nil then
         self.mode = "paused"
         self.currentFrame = frame
     end
 end
 
-function Animation:stopSequence()
+function Animation:stop()
     self.mode = nil
 end
 

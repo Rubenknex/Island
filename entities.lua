@@ -53,10 +53,10 @@ function Crab:init(x, y)
 
     self.image = love.graphics.newImage("images/crab.png")
     self.animation = Animation(self.image)
-    self.animation:addSequence("down", 0, 0, 16, 16, 2)
-    self.animation:addSequence("up", 0, 16, 16, 16, 2)
-    self.animation:addSequence("left", 0, 32, 16, 16, 2)
-    self.animation:addSequence("right", 0, 48, 16, 16, 2)
+    self.animation:add("down", 0, 0, 16, 16, 2)
+    self.animation:add("up", 0, 16, 16, 16, 2)
+    self.animation:add("left", 0, 32, 16, 16, 2)
+    self.animation:add("right", 0, 48, 16, 16, 2)
 end
 
 function Crab:update(dt)
@@ -69,7 +69,7 @@ function Crab:update(dt)
             self.collided = false
             self.idleTime = crabMinIdle + math.random() * (crabMaxIdle - crabMinIdle)
 
-            self.animation:pauseSequence(1)
+            self.animation:pause(1)
         else
             self.position = self.position + movement
             self.walkTime = self.walkTime - dt
@@ -98,10 +98,10 @@ function Crab:chooseTarget()
     local degrees = math.random(0, 359)
     local angle = math.rad(degrees)
 
-    if degrees >= 315 or degrees <= 45 then self.animation:playSequence("up", "loop", 0.2)
-    elseif degrees >= 45 and degrees <= 135 then self.animation:playSequence("right", "loop", 0.2)
-    elseif degrees >= 135 and degrees <= 225 then self.animation:playSequence("down", "loop", 0.2)
-    elseif degrees >= 225 and degrees <= 315 then self.animation:playSequence("left", "loop", 0.2) end
+    if degrees >= 315 or degrees <= 45 then self.animation:play("up", "loop", 0.2)
+    elseif degrees >= 45 and degrees <= 135 then self.animation:play("right", "loop", 0.2)
+    elseif degrees >= 135 and degrees <= 225 then self.animation:play("down", "loop", 0.2)
+    elseif degrees >= 225 and degrees <= 315 then self.animation:play("left", "loop", 0.2) end
 
     self.direction = Vec2(math.cos(angle), math.sin(angle))
     local distance = math.random(crabMinRange, crabMaxRange)
