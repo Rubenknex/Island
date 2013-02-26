@@ -4,8 +4,8 @@ require "entities"
 require "gui"
 require "map"
 require "player"
+require "quadtree"
 require "shapes"
-require "spatialhash"
 require "utils"
 require "vec2"
 
@@ -17,20 +17,20 @@ function Game:init()
     camera = Camera()
     camera:moveTo(player.position)
 
-    self.spatialhash = SpatialHash(10 * tileDrawSize)
+    self.quadTree = QuadTree(Rect(0, 0, 128 * tileDrawSize, 128 * tileDrawSize))
     entities = {}
     table.insert(entities, player)
     self:placeEntities()
 end
 
 function Game:update(dt)
-    self.spatialhash:clear()
+    self.quadTree:clear()
 
     for k, v in pairs(entities) do
         if v.update then v:update(dt) end
 
-        if v.collidable then
-            self.spatialhash:insert(v)
+        if v.collidable and not v.static then
+            self.quadTree:insert(v, function(entity) return entity:getRect() end)
         end
     end
 
@@ -50,14 +50,14 @@ function Game:draw()
             if v.draw then v:draw() end
         end
     end
+    self.quadTree:draw()
     camera:unset()
 
     self:onGUI()
 
     utils.debugPrint("FPS: " .. love.timer.getFPS(), 0, 0)
     utils.debugPrint("Player: " .. tostring(player.position), 0, 15)
-    utils.debugPrint(tostring(self.spatialhash), 0, 30)
-    utils.debugPrint("Collision checks: " .. self.checks, 0, 45)
+    utils.debugPrint(string.format("Collision: %d checks, %d solves", self.checks, self.solves), 0, 45)
 end
 
 function Game:placeEntities()
@@ -133,18 +133,19 @@ end
 
 function Game:handleEntityCollisions()
     self.checks = 0
+    self.solves = 0
 
     for k1, a in pairs(entities) do
-        local nearby = self.spatialhash:getNearby(a)
+        if a.collidable then
+            local nearby = self.quadTree:retrieve(a:getRect())
 
-        if a.collidable and not a.static then
             for k2, b in pairs(nearby) do
-                if k1 ~= k2 then
+                if a ~= b then
                     local collision, resolve = utils.collideCircleCircle(a:getCircle(), b:getCircle())
 
                     if collision then
-                        if b.static then
-                            a.position = a.position - resolve
+                        if a.static then
+                            b.position = b.position + resolve
                         else
                             a.position = a.position - resolve / 2
                             b.position = b.position + resolve / 2
@@ -152,6 +153,8 @@ function Game:handleEntityCollisions()
 
                         if a.collidedWith then a:collidedWith(b) end
                         if b.collidedWith then b:collidedWith(a) end
+
+                        self.solves = self.solves + 1
                     end
 
                     self.checks = self.checks + 1
