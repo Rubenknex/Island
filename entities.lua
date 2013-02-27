@@ -1,5 +1,5 @@
 require "animation"
-require "map"
+require "world"
 
 Entity = class()
 
@@ -15,11 +15,14 @@ function Entity:init(type, x ,y)
     self.collidable = true
     if data.collidable ~= nil then self.collidable = data.collidable end
     self.radius = data.radius or 0
+    self.scaleX = 2
+    if data.canFlip and math.random(0, 1) == 0 then self.scaleX = self.scaleX * -1 end
 end
 
 function Entity:draw()
     love.graphics.setColor(255, 255, 255, 255)
-    love.graphics.draw(self.image, self.position.x, self.position.y, 0, 2, 2, self.origin.x, self.origin.y)
+    local scale = 2
+    love.graphics.draw(self.image, self.position.x, self.position.y, 0, self.scaleX, 2, self.origin.x, self.origin.y)
 
     utils.debugDrawCircle(0, 255, 0, 255, self:getCircle())
 end
@@ -63,7 +66,7 @@ function Crab:update(dt)
     if self.walking then
         local movement = self.direction * crabSpeed * dt
 
-        if self.walkTime <= 0.0 or self.collided or map:tileAt(self.position.x, self.position.y).type ~= "sand" then
+        if self.walkTime <= 0.0 or self.collided or world:tileAt(self.position.x, self.position.y).type ~= "sand" then
             self.position = self.position - movement
             self.walking = false
             self.collided = false

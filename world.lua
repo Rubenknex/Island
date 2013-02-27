@@ -2,9 +2,9 @@ require "color"
 require "utils"
 require "vec2"
 
-Map = class()
+World = class()
 
-function Map:init(width, height)
+function World:init(width, height)
     self.width = width
     self.height = height
     self.tileset = love.graphics.newImage("images/terrain.png")
@@ -15,11 +15,29 @@ function Map:init(width, height)
             self.quads[y + 1][x + 1] = love.graphics.newQuad(x * 16, y * 16, 16, 16, self.tileset:getWidth(), self.tileset:getHeight())
         end
     end
+
+    self.quadTree = QuadTree(Rect(0, 0, 128 * tileDrawSize, 128 * tileDrawSize))
+    self.entities = {}
     
     self:generate(width, height)
 end
 
-function Map:draw()
+function World:update(dt)
+    self.quadTree:clear()
+
+    for k, v in pairs(self.entities) do
+        if v.update then v:update(dt) end
+
+        if v.collidable and not v.static then
+            self.quadTree:insert(v, function(entity) return entity:getRect() end)
+        end
+    end
+
+    self:handleMapCollisions()
+    self:handleEntityCollisions()
+end
+
+function World:draw()
     local bounds = camera:getBounds()
     local startX = math.floor(bounds.left / tileDrawSize)
     local startY = math.floor(bounds.top / tileDrawSize)
@@ -28,11 +46,11 @@ function Map:draw()
 
     for x=startX, endX do
         local posX = x * tileDrawSize
-        utils.debugDrawLine(255, 0, 0, 128, posX, startY * tileDrawSize, posX, endY * tileDrawSize)
+        --utils.debugDrawLine(255, 0, 0, 128, posX, startY * tileDrawSize, posX, endY * tileDrawSize)
 
         for y=startY, endY do
             local posY = y * tileDrawSize
-            utils.debugDrawLine(255, 0, 0, 128, startX * tileDrawSize, posY, endX * tileDrawSize, posY)
+            --utils.debugDrawLine(255, 0, 0, 128, startX * tileDrawSize, posY, endX * tileDrawSize, posY)
 
             if x >= 0 and y >= 0 and x < self.width and y < self.height then
                 local tile = self.tiles[x + 1][y + 1]
@@ -47,24 +65,32 @@ function Map:draw()
             end
         end
     end
+
+    table.sort(self.entities, function(a, b) return a.position.y < b.position.y end)
+    for k, v in pairs(self.entities) do
+        if camera:getBounds():contains(v.position.x, v.position.y) then
+            if v.draw then v:draw() end
+        end
+    end
+    self.quadTree:draw()
 end
 
-function Map:generate(width, height)
+function World:generate(width, height)
     local data = utils.noiseMap(width, height, mapFrequency, mapAmplitude, mapPersistence, mapOctaves, os.time())
-    utils.arrayToImage(data, "1 - Noise")
+    --utils.arrayToImage(data, "1 - Noise")
 
     local islandMask = self:generateIslandMask(width, height)
-    utils.arrayToImage(islandMask, "2 - Mask")
+    --utils.arrayToImage(islandMask, "2 - Mask")
 
     for x=1, width do
         for y=1, height do
             data[x][y] = data[x][y] * islandMask[x][y]
         end
     end
-    utils.arrayToImage(data, "3 - Masked")
+    --utils.arrayToImage(data, "3 - Masked")
 
     data = utils.smoothenHeightMap(data, mapSmoothingPasses)
-    utils.arrayToImage(data, "4 - Smoothened")
+    --utils.arrayToImage(data, "4 - Smoothened")
 
     self.tiles = {}
     for x=1, width do
@@ -97,7 +123,7 @@ function Map:generate(width, height)
     self.minimap = self:generateMinimap()
 end
 
-function Map:generateIslandMask(width, height)
+function World:generateIslandMask(width, height)
     local mask = {}
     for x=1, width do
         mask[x] = {}
@@ -110,7 +136,7 @@ function Map:generateIslandMask(width, height)
     return mask
 end
 
-function Map:generateTileTransitions()
+function World:generateTileTransitions()
     -- http://www.saltgames.com/2010/a-bitwise-method-for-applying-tilemaps/
     for x=1, self.width do
         for y=1, self.height do
@@ -131,18 +157,86 @@ function Map:generateTileTransitions()
     end
 end
 
-function Map:generateMinimap()
+function World:generateMinimap()
     local minimapData = love.image.newImageData(self.width, self.height)
-    for x=0, self.width - 1 do
-        for y=0, self.height - 1 do
-            minimapData:setPixel(x, y, self.tiles[x + 1][y + 1].color:toRGBA())
+    for x=1, self.width do
+        for y=1, self.height do
+            minimapData:setPixel(x - 1, y - 1, self.tiles[x][y].color:toRGBA())
         end
     end
 
     return love.graphics.newImage(minimapData)
 end
 
-function Map:tileAtIndex(x, y)
+function World:handleMapCollisions()
+    for k, e in pairs(self.entities) do
+        if e.collidable and not e.static then
+            e.collided = false
+
+            local circle = e:getCircle()
+            local left = circle.x - circle.radius
+            local middleX = circle.x
+            local right = circle.x + circle.radius
+            local top = circle.y - circle.radius
+            local middleY = circle.y
+            local bottom = circle.y + circle.radius
+
+            self:resolveMapCollision(left,   middleY, e)
+            self:resolveMapCollision(right,  middleY, e)
+            self:resolveMapCollision(middleX, top,    e)
+            self:resolveMapCollision(middleX, bottom, e)
+        end
+    end
+end
+
+function World:resolveMapCollision(x, y, entity)
+    if self:tileAt(x, y).type == "water" then
+        local result, resolve = utils.collideRectCircle(world:rectAt(x, y), entity:getCircle())
+
+        if result then
+            entity.position = entity.position + resolve
+        end
+    end
+end
+
+function World:handleEntityCollisions()
+    self.checks = 0
+    self.solves = 0
+
+    for k1, a in pairs(self.entities) do
+        if a.collidable then
+            local nearby = self.quadTree:retrieve(a:getRect())
+
+            for k2, b in pairs(nearby) do
+                if a ~= b then
+                    local collision, resolve = utils.collideCircleCircle(a:getCircle(), b:getCircle())
+
+                    if collision then
+                        if a.static then
+                            b.position = b.position + resolve
+                        else
+                            a.position = a.position - resolve / 2
+                            b.position = b.position + resolve / 2
+                        end
+
+                        if a.collidedWith then a:collidedWith(b) end
+                        if b.collidedWith then b:collidedWith(a) end
+
+                        self.solves = self.solves + 1
+                    end
+
+                    self.checks = self.checks + 1
+                end
+            end
+        end
+    end
+end
+
+function World:addEntity(entity)
+    table.insert(self.entities, entity)
+end
+
+function World:tileAtIndex(x, y)
     if x >= 0 and x < self.width and y >= 0 and y < self.height then
         return self.tiles[x + 1][y + 1]
     else
@@ -150,14 +244,14 @@ function Map:tileAtIndex(x, y)
     end
 end
 
-function Map:tileAt(x, y)
+function World:tileAt(x, y)
     tileX = math.floor(x / tileDrawSize)
     tileY = math.floor(y / tileDrawSize)
 
     return self:tileAtIndex(tileX, tileY)
 end
 
-function Map:rectAt(x, y)
+function World:rectAt(x, y)
     tileX = math.floor(x / tileDrawSize)
     tileY = math.floor(y / tileDrawSize)
 
