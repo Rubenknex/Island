@@ -5,11 +5,6 @@ function Animation:init(image)
     self.sequences = {}
     self.currentSequence = nil
     self.currentFrame = 0
-
-    -- nil: No animation is being played and no frame will be shown
-    -- 'paused': Show a single frame
-    -- 'once': Complete the animation one time
-    -- 'loop': Loop the animation until stopped
     self.mode = nil
     self.interval = 0
     self.timer = 0

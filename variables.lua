@@ -25,6 +25,7 @@ objectTypes={
         origin_x=16,
         origin_y=64,
         radius=8,
+        canFlip=true,
     },
 }
 
