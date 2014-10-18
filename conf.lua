@@ -1,14 +1,10 @@
 function love.conf(t)
-    t.title = "Island"
-    t.author = "Ruben van Gulik"
+	t.version = "0.9.1"
+	t.console = false
 
-    t.identity = "Island"
-    t.console = false
-    t.version = "0.8.0"
-    
-    t.release = false
+    t.window.title = "Island"
+    t.window.width = 640
+    t.window.height = 480
 
-    t.screen.width = 640
-    t.screen.height = 480
-    t.screen.vsync = true
+    t.modules.joystick = false
 end

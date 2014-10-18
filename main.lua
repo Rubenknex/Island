@@ -6,7 +6,7 @@ function love.load()
     debug = false
     gamestate = "game"
 
-    love.graphics.setDefaultImageFilter("nearest", "nearest")
+    love.graphics.setDefaultFilter("nearest", "nearest")
 
     game = Game()
 end

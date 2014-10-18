@@ -17,6 +17,9 @@ function Entity:init(type, x ,y)
     self.radius = data.radius or 0
     self.scaleX = 2
     if data.canFlip and math.random(0, 1) == 0 then self.scaleX = self.scaleX * -1 end
+
+    self.circle = {x = self.position.x, y = self.position.y, radius = self.radius}
+    self.rect = {x = self.position.x - self.origin.x * 2, y = self.position.y - self.origin.y * 2, w = self.image:getWidth() * 2, h = self.image:getHeight() * 2}
 end
 
 function Entity:draw()
@@ -28,16 +31,17 @@ function Entity:draw()
 end
 
 function Entity:getCircle()
-    return Circle(self.position.x, self.position.y, self.radius)
+    return self.circle
 end
 
 function Entity:getRect()
-    return Rect(self.position.x, self.position.y, self.image:getWidth(), self.image:getHeight())
+    return self.rect
 end
 
 Crab = class()
 
 function Crab:init(x, y)
+    self.type = "crab"
     self.position = Vec2(x, y)
     self.collidable = true
     self.static = false
@@ -92,7 +96,7 @@ end
 function Crab:draw()
     love.graphics.setColor(255, 255, 255, 255)
 
-    love.graphics.drawq(self.animation.image, self.animation:getCurrentQuad(), self.position.x, self.position.y, 0, 2, 2, 8, 8)
+    love.graphics.draw(self.animation.image, self.animation:getCurrentQuad(), self.position.x, self.position.y, 0, 2, 2, 8, 8)
 
     utils.debugDrawCircle(255, 0, 0, 255, self:getCircle())
 end
@@ -117,11 +121,9 @@ function Crab:collidedWith(other)
 end
 
 function Crab:getCircle()
-    self.circle:set(self.position)
-
-    return self.circle
+    return {x = self.position.x, y = self.position.y, radius = 7}
 end
 
 function Crab:getRect()
-    return Rect(self.position.x - 8, self.position.y - 8, self.image:getWidth(), self.image:getHeight())
+    return {x = self.position.x - 8, y = self.position.y - 8, w = self.image:getWidth(), h = self.image:getHeight()}
 end

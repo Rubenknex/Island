@@ -2,9 +2,6 @@ Inventory = class()
 
 function Inventory:init()
     self.items = {}
-    self:addItem({name="Sword", amount=1})
-    self:addItem({name="Wood", amount=123})
-    self:addItem({name="Flint", amount=1})
 end
 
 function Inventory:draw(x, y)
@@ -21,27 +18,33 @@ function Inventory:draw(x, y)
 end
 
 function Inventory:addItem(newItem)
-    local item = self.items[newItem.name]
+    for k, v in pairs(self.items) do
+        if v.name == newItem.name then
+            v.amount = v.amount + newItem.amount
 
-    if item == nil then
-        self.items[newItem.name] = newItem
-    else
-        item.amount = item.amount + 1
+            return
+        end
     end
+
+    table.insert(self.items, newItem)
 end
 
 function Inventory:removeItem(name, amount)
-    local item = self.items[name]
-
-    if item ~= nil then
-        if item.amount - amount >= 1 then
-            self.items[name] = nil
-        else
-            item.amount = item.amount - amount
+    for k, v in pairs(self.items) do
+        if v.name == name then
+            if v.amount - amount <= 0 then
+                self.items[k] = nil
+            else
+                v.amount = v.amount - amount
+            end
         end
     end
 end
 
 function Inventory:hasItem(name)
-    return self.items[name] ~= nil
+    for k, v in pairs(self.items) do
+        if v.name == name then return true end
+    end
+
+    return false
 end

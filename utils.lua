@@ -1,4 +1,3 @@
-require "noise"
 require "vec2"
 
 utils = {}
@@ -34,6 +33,24 @@ function utils.cerp(a, b, x)
     return a * (1 - f) + b * f
 end
 
+function utils.rectContains(rect, x, y)
+    if not y then
+        y = x.y
+        x = x.x
+    end
+
+    return x >= rect.x and x <= rect.x + rect.w and y >= rect.y and y <= rect.y + rect.h
+end
+
+function utils.rectIntersects(a, b)
+    if a.x + a.w < b.x or a.x > b.x + b.w or
+        a.y + a.h < b.y or a.y > b.y + b.h then
+        return false
+    end
+
+    return true
+end
+
 function utils.collideRectCircle(rect, circle)
     local closest = Vec2(utils.clamp(circle.x, rect.left, rect.right), 
                          utils.clamp(circle.y, rect.top, rect.bottom))
@@ -65,7 +82,8 @@ function utils.collideCircleCircle(a, b)
 end
 
 function utils.noiseMap(width, height, frequency, amplitude, persistence, octaves, seed)
-    noise.seed(seed)
+    local offsetX = love.math.random() * 20000
+    local offsetY = love.math.random() * 20000
 
     local data = {}
     local min, max = math.huge, -math.huge
@@ -83,7 +101,7 @@ function utils.noiseMap(width, height, frequency, amplitude, persistence, octave
             local amplitude = startAmplitude
 
             for octave=1, octaves do
-                total = total + noise.simplex((x * period) * frequency, (y * period) * frequency) * amplitude
+                total = total + love.math.noise(offsetX + (x * period) * frequency, offsetY + (y * period) * frequency) * amplitude
 
                 frequency = frequency * 2
                 amplitude = amplitude * persistence
@@ -195,7 +213,8 @@ end
 function utils.debugDrawLine(r, g, b, a, x1, y1, x2, y2)
     if debug then
         love.graphics.setColor(r, g, b, a)
-        love.graphics.setLine(1, "rough")
+        love.graphics.setLineWidth(1)
+        love.graphics.setLineStyle("rough")
         love.graphics.line(x1, y1, x2, y2)
     end
 end
@@ -203,7 +222,8 @@ end
 function utils.debugDrawCircle(r, g, b, a, circle)
     if debug then
         love.graphics.setColor(r, g, b, a)
-        love.graphics.setLine(1, "rough")
+        love.graphics.setLineWidth(1)
+        love.graphics.setLineStyle("rough")
         love.graphics.circle("line", circle.x, circle.y, circle.radius)
     end
 end

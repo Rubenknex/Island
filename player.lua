@@ -7,6 +7,7 @@ require "world"
 Player = class()
 
 function Player:init()
+    self.type = "player"
     self.position = Vec2()
     while world:tileAt(self.position.x, self.position.y).type == "water" do
         self.position = Vec2((math.random(world.width - 1) + 0.5) * tileDrawSize, (math.random(world.height - 1) + 0.5) * tileDrawSize)
@@ -17,6 +18,9 @@ function Player:init()
     self.static = false
 
     self.inventory = Inventory()
+    self.inventory:addItem({name="wood", amount=3})
+    self.inventory:addItem({name="rope", amount=1})
+    self.inventory:addItem({name="vine", amount=2})
 
     self.image = love.graphics.newImage("images/man.png")
     self.animation = Animation(self.image)
@@ -33,7 +37,7 @@ end
 
 function Player:draw()
     love.graphics.setColor(255, 255, 255, 255)
-    love.graphics.drawq(self.animation.image, self.animation:getCurrentQuad(), self.position.x, self.position.y, 0, 3, 3, self.offset.x, self.offset.y)
+    love.graphics.draw(self.animation.image, self.animation:getCurrentQuad(), self.position.x, self.position.y, 0, 2, 2, self.offset.x, self.offset.y)
     
     utils.debugDrawCircle(255, 0, 0, 255, self:getCircle())
 end
@@ -72,9 +76,9 @@ function Player:collideWith(other)
 end
 
 function Player:getCircle()
-    return Circle(self.position.x, self.position.y, 7)
+    return {x = self.position.x, y = self.position.y, radius = 7}
 end
 
 function Player:getRect()
-    return Rect(self.position.x - self.offset.x, self.position.y - self.offset.y, self.image:getWidth(), self.image:getHeight())
+    return {x = self.position.x, y = self.position.y - self.offset.y, w = self.image:getWidth(), h = self.image:getHeight()}
 end

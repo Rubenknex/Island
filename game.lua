@@ -3,7 +3,6 @@ require "color"
 require "entities"
 require "gui"
 require "player"
-require "quadtree"
 require "shapes"
 require "utils"
 require "vec2"
@@ -20,6 +19,8 @@ function Game:init()
     camera:moveTo(player.position)
 
     self:placeEntities()
+
+    self.showInventory = false
 end
 
 function Game:update(dt)
@@ -84,7 +85,11 @@ function Game:onGUI()
     love.graphics.setColor(135, 72, 0)
     love.graphics.rectangle("fill", 0, 480 - 40, 640, 40)
 
-    if GUI.button("hover", Rect(640 - 65, 480 - 35, 60, 30), "Inventory") then
+    if GUI.button("click", Rect(640 - 65, 480 - 35, 60, 30), "Inventory") then
+        self.showInventory = not self.showInventory
+    end
+
+    if self.showInventory then
         player.inventory:draw(640 - 155, 480 - 295)
     end
 

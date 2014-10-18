@@ -1,35 +1,40 @@
 require "color"
+require "grid"
 require "utils"
 require "vec2"
 
 World = class()
 
 function World:init(width, height)
+    self.tileset = love.graphics.newImage("images/terrain.png")
+
     self.width = width
     self.height = height
-    self.tileset = love.graphics.newImage("images/terrain.png")
+
+    self.tiles = {}
     self.quads = {}
-    for y=0, 3 do
+    for y=0, #tileTypes - 1 do
         self.quads[y + 1] = {}
         for x=0, 15 do
-            self.quads[y + 1][x + 1] = love.graphics.newQuad(x * 16, y * 16, 16, 16, self.tileset:getWidth(), self.tileset:getHeight())
+            self.quads[y + 1][x + 1] = love.graphics.newQuad(x * tileSize, y * tileSize, tileSize, tileSize, self.tileset:getWidth(), self.tileset:getHeight())
         end
     end
 
-    self.quadTree = QuadTree(Rect(0, 0, 128 * tileDrawSize, 128 * tileDrawSize))
     self.entities = {}
+
+    self.grid = Grid(width * tileDrawSize, height * tileDrawSize, gridSize)
     
     self:generate(width, height)
 end
 
 function World:update(dt)
-    self.quadTree:clear()
+    self.grid:clear()
 
     for k, v in pairs(self.entities) do
         if v.update then v:update(dt) end
 
         if v.collidable and not v.static then
-            self.quadTree:insert(v, function(entity) return entity:getRect() end)
+            self.grid:insert(v)
         end
     end
 
@@ -38,11 +43,11 @@ function World:update(dt)
 end
 
 function World:draw()
-    local bounds = camera:getBounds()
-    local startX = math.floor(bounds.left / tileDrawSize)
-    local startY = math.floor(bounds.top / tileDrawSize)
-    local endX = math.ceil(bounds.right / tileDrawSize)
-    local endY = math.ceil(bounds.bottom / tileDrawSize)
+    local bounds = camera:getRect()
+    local startX = math.floor(bounds.x / tileDrawSize)
+    local startY = math.floor(bounds.y / tileDrawSize)
+    local endX = math.ceil((bounds.x + bounds.w) / tileDrawSize)
+    local endY = math.ceil((bounds.y + bounds.h) / tileDrawSize)
 
     for x=startX, endX do
         local posX = x * tileDrawSize
@@ -56,11 +61,11 @@ function World:draw()
                 local tile = self.tiles[x + 1][y + 1]
 
                 love.graphics.setColor(tile.color:toRGB())
-                love.graphics.drawq(self.tileset, self.quads[tile.index][1], posX, posY, 0, tileDrawSize / tileSize)
+                love.graphics.draw(self.tileset, self.quads[tile.index][1], posX, posY, 0, tileDrawSize / tileSize)
 
                 if tile.transition > 0 then
                     love.graphics.setColor(tileTypes[tile.index + 1].startColor:toRGB())
-                    love.graphics.drawq(self.tileset, self.quads[tile.index + 1][tile.transition + 1], posX, posY, 0, 2)
+                    love.graphics.draw(self.tileset, self.quads[tile.index + 1][tile.transition + 1], posX, posY, 0, 2)
                 end
             end
         end
@@ -68,11 +73,10 @@ function World:draw()
 
     table.sort(self.entities, function(a, b) return a.position.y < b.position.y end)
     for k, v in pairs(self.entities) do
-        if camera:getBounds():contains(v.position.x, v.position.y) then
+        if utils.rectIntersects(v:getRect(), camera:getRect()) then
             if v.draw then v:draw() end
         end
     end
-    self.quadTree:draw()
 end
 
 function World:generate(width, height)
@@ -92,7 +96,6 @@ function World:generate(width, height)
     data = utils.smoothenHeightMap(data, mapSmoothingPasses)
     --utils.arrayToImage(data, "4 - Smoothened")
 
-    self.tiles = {}
     for x=1, width do
         self.tiles[x] = {}
 
@@ -205,7 +208,7 @@ function World:handleEntityCollisions()
 
     for k1, a in pairs(self.entities) do
         if a.collidable then
-            local nearby = self.quadTree:retrieve(a:getRect())
+            local nearby = self.grid:getNearby(a)
 
             for k2, b in pairs(nearby) do
                 if a ~= b then

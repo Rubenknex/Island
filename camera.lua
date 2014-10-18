@@ -59,6 +59,7 @@ function Camera:setRotation(rotation)
     self.rotation = rotation
 end
 
-function Camera:getBounds()
-    return Rect(self.x - self.width / 2, self.y - self.height / 2, self.width, self.height)
+function Camera:getRect()
+    --return Rect(self.x - self.width / 2, self.y - self.height / 2, self.width, self.height)
+    return {x = self.x - self.width / 2, y = self.y - self.height / 2, w = self.width, h = self.height}
 end
