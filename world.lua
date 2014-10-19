@@ -71,9 +71,17 @@ function World:draw()
         end
     end
 
+
     table.sort(self.entities, function(a, b) return a.position.y < b.position.y end)
+    
     for k, v in pairs(self.entities) do
-        if utils.rectIntersects(v:getRect(), camera:getRect()) then
+        if v.flat and utils.rectIntersects(v:getRect(), camera:getRect()) then
+            if v.draw then v:draw() end
+        end
+    end
+
+    for k, v in pairs(self.entities) do
+        if not v.flat and utils.rectIntersects(v:getRect(), camera:getRect()) then
             if v.draw then v:draw() end
         end
     end
@@ -84,7 +92,7 @@ function World:generate(width, height)
     --utils.arrayToImage(data, "1 - Noise")
 
     local islandMask = self:generateIslandMask(width, height)
-    --utils.arrayToImage(islandMask, "2 - Mask")
+    utils.arrayToImage(islandMask, "2 - Mask")
 
     for x=1, width do
         for y=1, height do
@@ -131,7 +139,7 @@ function World:generateIslandMask(width, height)
     for x=1, width do
         mask[x] = {}
         for y=1, height do
-            local value = utils.gaussian((x - width / 2) / (width / 1.3), (y - height / 2) / (height / 1.3), 0.3)
+            local value = utils.gaussian((x - width / 2) / (width / 1), (y - height / 2) / (height / 1), 0.2)
             mask[x][y] = utils.clamp(value, 0.0, 1.0)
         end
     end
@@ -258,5 +266,5 @@ function World:rectAt(x, y)
     tileX = math.floor(x / tileDrawSize)
     tileY = math.floor(y / tileDrawSize)
 
-    return Rect(tileX * tileDrawSize, tileY * tileDrawSize, tileDrawSize, tileDrawSize)
+    return utils.rect(tileX * tileDrawSize, tileY * tileDrawSize, tileDrawSize, tileDrawSize)
 end

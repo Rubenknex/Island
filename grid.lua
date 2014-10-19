@@ -29,7 +29,6 @@ function Grid:getIndices(entity)
 	local x2 = math.floor((rect.x + rect.w) / self.nodeSize)
 	local y2 = math.floor((rect.y + rect.h) / self.nodeSize)
 
-
 	return x1, y1, x2, y2
 end
 
@@ -71,14 +70,4 @@ function Grid:draw()
 			end
 		end
 	end
-end
-
-function Grid:status()
-	for k, v in pairs(self.nodes) do
-		for k2, v2 in pairs(v) do
-			io.write(#v2)
-		end
-		io.write("\n")
-	end
-	io.write("\n")
 end

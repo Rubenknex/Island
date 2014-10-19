@@ -3,8 +3,8 @@ require "color"
 require "entities"
 require "gui"
 require "player"
-require "shapes"
 require "utils"
+require "variables"
 require "vec2"
 require "world"
 
@@ -51,31 +51,19 @@ function Game:placeEntities()
         world:addEntity(Crab(position.x, position.y))
     end
 
-    for x=1, world.width do
-        for y=1, world.height do
-            local s = 128
-            local p = 0.4
-            local point = Vec2(x * s + utils.random(-p, p) * s, y * s + utils.random(-p, p) * s)
+    for k, v in pairs(objectTypes) do
+        -- do something with density in the loop amount
+        for x=1, world.width, (1 / v.density) do
+            for y=1, world.height do
+                local s = 128
+                local p = 0.4
+                local point = Vec2(x * s + utils.random(-p, p) * s, y * s + utils.random(-p, p) * s)
 
-            local tile = world:tileAt(point.x, point.y)
+                local tile = world:tileAt(point.x, point.y)
 
-            if tile and tile.type == "grass" then
-                world:addEntity(Entity("palm", point.x, point.y))
-            end
-        end
-    end
-
-    for x=1, world.width do
-        for y=1, world.height do
-            local s = 128
-            local p = 0.4
-            local point = Vec2(x * s + utils.random(-p, p) * s, y * s + utils.random(-p, p) * s)
-
-            local tile = world:tileAt(point.x, point.y)
-
-            if tile and tile.type == "sand" then
-                local choices = {"starfish", "stone", "shell"}
-                world:addEntity(Entity(choices[math.random(1, 3)], point.x, point.y))
+                if tile and tile.value > v.value_min and tile.value < v.value_max then
+                    world:addEntity(Object(k, point.x, point.y))
+                end
             end
         end
     end
@@ -85,7 +73,7 @@ function Game:onGUI()
     love.graphics.setColor(135, 72, 0)
     love.graphics.rectangle("fill", 0, 480 - 40, 640, 40)
 
-    if GUI.button("click", Rect(640 - 65, 480 - 35, 60, 30), "Inventory") then
+    if GUI.button("click", utils.rect(640 - 65, 480 - 35, 60, 30), "Inventory") then
         self.showInventory = not self.showInventory
     end
 
@@ -93,7 +81,7 @@ function Game:onGUI()
         player.inventory:draw(640 - 155, 480 - 295)
     end
 
-    if GUI.button("hover", Rect(640 - 130, 480 - 35, 60, 30), "Map") then
+    if GUI.button("hover", utils.rect(640 - 130, 480 - 35, 60, 30), "Map") then
         self:drawMinimap()
     end
 end

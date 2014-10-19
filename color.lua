@@ -2,6 +2,10 @@ require "utils"
 
 Color = class()
 
+Color.Red = Color(255, 0, 0)
+Color.Green = Color(0, 255, 0)
+Color.Blue = Color(0, 0, 255)
+
 function Color:init(r, g, b, a)
     self.r, self.g, self.b, self.a = r, g, b, a or 255
 end

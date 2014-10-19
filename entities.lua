@@ -1,55 +1,96 @@
 require "animation"
 require "world"
 
+--[[
+Types of entities:
+-   Simple static objects:
+    These are objects like stones, shells, coconuts, sticks etc.
+    They do not perform any action by themselves, but can be interacted
+    with by the player.
+
+-   Static objects:
+    These are a bit more complex than simple static objects, in the sense
+    that they have unique logic. Like a palm tree of which the coconuts
+    can be taken, and can grow new coconuts. Or can be cut down and gradually
+    dissapear.
+
+-   Dynamic entities:
+    These are the various entities that live on the island, like crabs,
+    seagulls, snakes etc. They perform various actions and 
+]]--
+
+--[[
+Object properties:
+- origin_x, origin_y:   set the center of the object                (0, 0)
+- limit_min, limit_max: object can only occur in this range         (0, 1)
+- density:              occurrance                                  (1)
+- static:               is the object non-moving?                   (true)
+- collidable:           can the object be collided with?            (false)
+- radius:               radius of the collision circle              (0)
+- rotation:             can the object be randomly rotated?         (false)
+- can_flip:             can the object be flipped in the x-axis?    (false)
+- flat:                 is the object flat on the ground?           (true)
+]]--
+
 Entity = class()
 
-function Entity:init(type, x ,y)
-    local data = objectTypes[type]
-
+function Entity:init(type, x, y, origin, static, collidable, radius, rotation)
     self.type = type
-    self.image = love.graphics.newImage("images/" .. type .. ".png")
+    self.image = images[type]
     self.position = Vec2(x, y)
-    self.origin = Vec2(data.origin_x, data.origin_y)
-    self.static = true
-    if data.static ~= nil then self.static = data.static end
-    self.collidable = true
-    if data.collidable ~= nil then self.collidable = data.collidable end
-    self.radius = data.radius or 0
-    self.scaleX = 2
-    if data.canFlip and math.random(0, 1) == 0 then self.scaleX = self.scaleX * -1 end
-
-    self.circle = {x = self.position.x, y = self.position.y, radius = self.radius}
-    self.rect = {x = self.position.x - self.origin.x * 2, y = self.position.y - self.origin.y * 2, w = self.image:getWidth() * 2, h = self.image:getHeight() * 2}
+    self.origin = origin or Vec2(0, 0)
+    self.static = static
+    self.collidable = collidable or false
+    self.radius = radius or 0
+    self.rotation = rotation or 0
+    self.scale = Vec2(2, 2)
 end
 
-function Entity:draw()
+function Entity:getCircle()
+    return {x = self.position.x, 
+            y = self.position.y, 
+            radius = self.radius}
+end
+
+function Entity:getRect()
+    local scaleX, scaleY = math.abs(self.scale.x), math.abs(self.scale.y)
+    return {x = self.position.x - self.origin.x  * scaleX, 
+            y = self.position.y - self.origin.y * scaleY, 
+            w = self.image:getWidth() * scaleX, 
+            h = self.image:getHeight() * scaleY}
+end
+
+Object = class(Entity)
+
+function Object:init(type, x ,y)
+    local data = objectTypes[type]
+    Entity.init(self, type, x, y, data.origin, true, data.collidable, data.radius)
+
+    self.limit_min, self.limit_max = 0, 1
+    self.density = data.density or 1
+    self.can_flip = data.can_flip or false
+    self.flat = true
+    if data.flat ~= nil then self.flat = data.flat end
+
+    if data.rotation ~= nil then self.rotation = math.random() * 2 * math.pi end
+
+    if data.can_flip and math.random(0, 1) == 0 then self.scale.x = self.scale.x * -1 end
+end
+
+function Object:draw()
     love.graphics.setColor(255, 255, 255, 255)
     local scale = 2
-    love.graphics.draw(self.image, self.position.x, self.position.y, 0, self.scaleX, 2, self.origin.x, self.origin.y)
+    love.graphics.draw(self.image, self.position.x, self.position.y, self.rotation, self.scale.x, self.scale.y, self.origin.x, self.origin.y)
 
     utils.debugDrawCircle(0, 255, 0, 255, self:getCircle())
 end
 
-function Entity:getCircle()
-    return self.circle
-end
-
-function Entity:getRect()
-    return self.rect
-end
-
-Crab = class()
+Crab = class(Entity)
 
 function Crab:init(x, y)
-    self.type = "crab"
-    self.position = Vec2(x, y)
-    self.collidable = true
-    self.static = false
+    Entity.init(self, "crab", x, y, Vec2(8, 8), false, true, 7)
 
     self.collided = false
-
-    self.circle = Circle(x, y, 6)
-    self.rect = Rect(x, y, 16, 16)
 
     self.direction = Vec2()
     self.degrees = 0
@@ -58,7 +99,7 @@ function Crab:init(x, y)
     self.walkTime = 0.0
     self.idleTime = 0.0
 
-    self.image = love.graphics.newImage("images/crab.png")
+    self.image = images["crab"]
     self.animation = Animation(self.image)
     self.animation:add("down", 0, 0, 16, 16, 2)
     self.animation:add("up", 0, 16, 16, 16, 2)
@@ -96,7 +137,7 @@ end
 function Crab:draw()
     love.graphics.setColor(255, 255, 255, 255)
 
-    love.graphics.draw(self.animation.image, self.animation:getCurrentQuad(), self.position.x, self.position.y, 0, 2, 2, 8, 8)
+    love.graphics.draw(self.animation.image, self.animation:getCurrentQuad(), self.position.x, self.position.y, 0, self.scale.x, self.scale.y, self.origin.x, self.origin.y)
 
     utils.debugDrawCircle(255, 0, 0, 255, self:getCircle())
 end
@@ -118,12 +159,4 @@ end
 
 function Crab:collidedWith(other)
     self.collided = true
-end
-
-function Crab:getCircle()
-    return {x = self.position.x, y = self.position.y, radius = 7}
-end
-
-function Crab:getRect()
-    return {x = self.position.x - 8, y = self.position.y - 8, w = self.image:getWidth(), h = self.image:getHeight()}
 end

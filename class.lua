@@ -1,42 +1,34 @@
 function class(base)
-    local c = {}
+    -- Create the new class and set the __index to the class
+    -- definition to look up methods
+    local cls = {}
+    cls.__index = cls
 
-    if type(base) == "table" then
-        for key,value in pairs(base) do
-            c[key] = value
+    -- This part doesn't allow the child class to have new methods.
+    -- Copy the properties of the base class over to the new class
+    --[[if type(base) == "table" then
+        for key, value in pairs(base) do
+            --cls[key] = value
         end
-        c._base = base
-    end
-
-    c.__index = c
+    end]]
 
     local mt = {}
+    mt.__index = base
     mt.__call = function(class_table, ...)
-        local self = {}
-        setmetatable(self, c)
+        local instance = setmetatable({}, cls)
 
         if class_table.init then
-            class_table.init(self, ...)
+            class_table.init(instance, ...)
         else
             if base and base.init then
-                base.init(self, ...)
+                base.init(instance, ...)
             end
         end
 
-        return self
+        return instance
     end
 
-    c.is_a = function(self, klass)
-        local m = getmetatable(self)
+    setmetatable(cls, mt)
 
-        while m do
-            if m == klass then return true end
-            m = m._base
-        end
-
-        return false
-    end
-
-    setmetatable(c, mt)
-    return c
+    return cls
 end

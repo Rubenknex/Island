@@ -8,6 +8,15 @@ function love.load()
 
     love.graphics.setDefaultFilter("nearest", "nearest")
 
+    images = {}
+    local files = love.filesystem.getDirectoryItems("images")
+    for k, file in pairs(files) do
+        local name, extension = string.match(file, "(.+)%.(.+)")
+        if extension == "png" then
+            images[name] = love.graphics.newImage("images/" .. file)
+        end
+    end
+
     game = Game()
 end
 

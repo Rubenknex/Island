@@ -1,6 +1,5 @@
 require "animation"
 require "inventory"
-require "shapes"
 require "utils"
 require "world"
 
@@ -22,7 +21,8 @@ function Player:init()
     self.inventory:addItem({name="rope", amount=1})
     self.inventory:addItem({name="vine", amount=2})
 
-    self.image = love.graphics.newImage("images/man.png")
+    --self.image = love.graphics.newImage("images/man.png")
+    self.image = images["man"]
     self.animation = Animation(self.image)
     self.animation:add("down", 0, 0, 16, 16, 1)
     self.animation:add("up", 16, 0, 16, 16, 1)

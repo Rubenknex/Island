@@ -10,6 +10,10 @@ function utils.random(min, max)
     return math.random() * (max - min)
 end
 
+function utils.choice(choices)
+    return choices[math.random(1, #choices)]
+end
+
 function utils.normalize(value, min, max)
     return (value - min) / (max - min)
 end
@@ -33,6 +37,10 @@ function utils.cerp(a, b, x)
     return a * (1 - f) + b * f
 end
 
+function utils.rect(X, Y, W, H)
+    return {x = X, y = Y, w = W, h = H}
+end
+
 function utils.rectContains(rect, x, y)
     if not y then
         y = x.y
@@ -52,8 +60,8 @@ function utils.rectIntersects(a, b)
 end
 
 function utils.collideRectCircle(rect, circle)
-    local closest = Vec2(utils.clamp(circle.x, rect.left, rect.right), 
-                         utils.clamp(circle.y, rect.top, rect.bottom))
+    local closest = Vec2(utils.clamp(circle.x, rect.x, rect.x + rect.w), 
+                         utils.clamp(circle.y, rect.y, rect.y + rect.h))
 
     local distanceVec = Vec2(circle.x, circle.y) - closest
     local distance = distanceVec:length()
